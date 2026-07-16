@@ -6,12 +6,20 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
+import java.util.Map;
 
 /**
- * 模板 - 游戏卡片模板的核心模型
+ * Core template model for game cards.
  * <p>
- * 每一种游戏风格（如 Pokémon、原神、Minecraft）对应一个独立模板。
- * 模板定义了卡片的布局、配色、字段映射和样式信息。
+ * Each game style (Pokemon, Genshin, Minecraft, etc.) has its own template.
+ * A template defines card layout, colors, field mappings, and style info.
+ * <p>
+ * Design principles:
+ * <ul>
+ *   <li>Decoupled: components read template config, no hardcoded business logic</li>
+ *   <li>Attribute-driven: themeMapping maps field values to visual themes</li>
+ *   <li>Extensible: new templates = new template.json + assets, no Renderer changes</li>
+ * </ul>
  *
  * @author GameCard Team
  */
@@ -21,31 +29,52 @@ import java.util.List;
 @AllArgsConstructor
 public class Template {
 
-    /** 模板唯一标识（如 "pokemon"、"genshin"） */
+    /** Template ID (e.g. "pokemon", "genshin") */
     private String id;
 
-    /** 模板名称（如 "宝可梦"） */
+    /** Template display name */
     private String name;
 
-    /** 模板描述 */
+    /** Template description */
     private String description;
 
-    /** 模板作者 */
+    /** Template author */
     private String author;
 
-    /** 模板版本 */
+    /** Template version */
     private String version;
 
-    /** 预览图路径 */
+    /** Preview image path */
     private String previewImage;
 
-    /** 模板标签（用于分类筛选） */
+    /** Template tags for filtering */
     private List<String> tags;
 
-    /** 模板字段定义列表 */
+    /** Card dimensions */
+    private TemplateSize size;
+
+    /** Field definitions */
     private List<TemplateField> fields;
 
-    /** 模板元数据 */
+    /**
+     * Theme mapping table (field value -> theme config)
+     * <p>
+     * Core of attribute-driven theming:
+     * the frontend resolves themes by looking up card data values
+     * in this map -- no hardcoded if/else chains.
+     */
+    private Map<String, ThemeMappingItem> themeMapping;
+
+    /**
+     * Field name used as the theme lookup key.
+     * e.g. "type" means cardData["type"] drives the theme.
+     */
+    private String themeField;
+
+    /** Template asset definitions */
+    private TemplateAssets assets;
+
+    /** Template metadata */
     private TemplateMetadata metadata;
 
 }

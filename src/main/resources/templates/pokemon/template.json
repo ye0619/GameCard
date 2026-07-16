@@ -1,0 +1,378 @@
+{
+  "id": "pokemon",
+  "name": "Monster Dex",
+  "description": "经典宝可梦风格游戏图鉴卡片，支持属性主题自动切换",
+  "author": "GameCard Team",
+  "version": "1.0.0",
+  "previewImage": "/images/preview/pokemon.png",
+  "tags": ["经典", "日式", "RPG", "图鉴"],
+  "size": {
+    "width": 600,
+    "height": 900
+  },
+  "themeField": "type",
+  "themeMapping": {
+    "火": {
+      "background": "fire-bg",
+      "color": "#EF4444",
+      "icon": "fire",
+      "secondaryColor": "#DC2626",
+      "styles": {
+        "gradient-start": "#F97316",
+        "gradient-end": "#DC2626",
+        "glow-color": "rgba(239, 68, 68, 0.3)"
+      }
+    },
+    "水": {
+      "background": "water-bg",
+      "color": "#3B82F6",
+      "icon": "water",
+      "secondaryColor": "#2563EB",
+      "styles": {
+        "gradient-start": "#60A5FA",
+        "gradient-end": "#2563EB",
+        "glow-color": "rgba(59, 130, 246, 0.3)"
+      }
+    },
+    "草": {
+      "background": "grass-bg",
+      "color": "#22C55E",
+      "icon": "grass",
+      "secondaryColor": "#16A34A",
+      "styles": {
+        "gradient-start": "#4ADE80",
+        "gradient-end": "#16A34A",
+        "glow-color": "rgba(34, 197, 94, 0.3)"
+      }
+    },
+    "电": {
+      "background": "electric-bg",
+      "color": "#EAB308",
+      "icon": "electric",
+      "secondaryColor": "#CA8A04",
+      "styles": {
+        "gradient-start": "#FACC15",
+        "gradient-end": "#CA8A04",
+        "glow-color": "rgba(234, 179, 8, 0.3)"
+      }
+    },
+    "超能力": {
+      "background": "psychic-bg",
+      "color": "#A855F7",
+      "icon": "psychic",
+      "secondaryColor": "#9333EA",
+      "styles": {
+        "gradient-start": "#C084FC",
+        "gradient-end": "#9333EA",
+        "glow-color": "rgba(168, 85, 247, 0.3)"
+      }
+    },
+    "格斗": {
+      "background": "fighting-bg",
+      "color": "#F97316",
+      "icon": "fighting",
+      "secondaryColor": "#EA580C",
+      "styles": {
+        "gradient-start": "#FB923C",
+        "gradient-end": "#EA580C",
+        "glow-color": "rgba(249, 115, 22, 0.3)"
+      }
+    },
+    "岩石": {
+      "background": "rock-bg",
+      "color": "#A16207",
+      "icon": "rock",
+      "secondaryColor": "#854D0E",
+      "styles": {
+        "gradient-start": "#CA8A04",
+        "gradient-end": "#854D0E",
+        "glow-color": "rgba(161, 98, 7, 0.3)"
+      }
+    },
+    "地面": {
+      "background": "ground-bg",
+      "color": "#D97706",
+      "icon": "ground",
+      "secondaryColor": "#B45309",
+      "styles": {
+        "gradient-start": "#F59E0B",
+        "gradient-end": "#B45309",
+        "glow-color": "rgba(217, 119, 6, 0.3)"
+      }
+    },
+    "飞行": {
+      "background": "flying-bg",
+      "color": "#60A5FA",
+      "icon": "flying",
+      "secondaryColor": "#3B82F6",
+      "styles": {
+        "gradient-start": "#93C5FD",
+        "gradient-end": "#3B82F6",
+        "glow-color": "rgba(96, 165, 250, 0.3)"
+      }
+    },
+    "虫": {
+      "background": "bug-bg",
+      "color": "#84CC16",
+      "icon": "bug",
+      "secondaryColor": "#65A30D",
+      "styles": {
+        "gradient-start": "#A3E635",
+        "gradient-end": "#65A30D",
+        "glow-color": "rgba(132, 204, 22, 0.3)"
+      }
+    },
+    "毒": {
+      "background": "poison-bg",
+      "color": "#D946EF",
+      "icon": "poison",
+      "secondaryColor": "#C026D3",
+      "styles": {
+        "gradient-start": "#E879F9",
+        "gradient-end": "#C026D3",
+        "glow-color": "rgba(217, 70, 239, 0.3)"
+      }
+    },
+    "一般": {
+      "background": "normal-bg",
+      "color": "#9CA3AF",
+      "icon": "normal",
+      "secondaryColor": "#6B7280",
+      "styles": {
+        "gradient-start": "#D1D5DB",
+        "gradient-end": "#6B7280",
+        "glow-color": "rgba(156, 163, 175, 0.3)"
+      }
+    },
+    "幽灵": {
+      "background": "ghost-bg",
+      "color": "#8B5CF6",
+      "icon": "ghost",
+      "secondaryColor": "#7C3AED",
+      "styles": {
+        "gradient-start": "#A78BFA",
+        "gradient-end": "#7C3AED",
+        "glow-color": "rgba(139, 92, 246, 0.3)"
+      }
+    },
+    "冰": {
+      "background": "ice-bg",
+      "color": "#06B6D4",
+      "icon": "ice",
+      "secondaryColor": "#0891B2",
+      "styles": {
+        "gradient-start": "#22D3EE",
+        "gradient-end": "#0891B2",
+        "glow-color": "rgba(6, 182, 212, 0.3)"
+      }
+    },
+    "龙": {
+      "background": "dragon-bg",
+      "color": "#6366F1",
+      "icon": "dragon",
+      "secondaryColor": "#4F46E5",
+      "styles": {
+        "gradient-start": "#818CF8",
+        "gradient-end": "#4F46E5",
+        "glow-color": "rgba(99, 102, 241, 0.3)"
+      }
+    },
+    "恶": {
+      "background": "dark-bg",
+      "color": "#78350F",
+      "icon": "dark",
+      "secondaryColor": "#451A03",
+      "styles": {
+        "gradient-start": "#92400E",
+        "gradient-end": "#451A03",
+        "glow-color": "rgba(120, 53, 15, 0.3)"
+      }
+    },
+    "钢": {
+      "background": "steel-bg",
+      "color": "#6B7280",
+      "icon": "steel",
+      "secondaryColor": "#4B5563",
+      "styles": {
+        "gradient-start": "#9CA3AF",
+        "gradient-end": "#4B5563",
+        "glow-color": "rgba(107, 114, 128, 0.3)"
+      }
+    },
+    "妖精": {
+      "background": "fairy-bg",
+      "color": "#F472B6",
+      "icon": "fairy",
+      "secondaryColor": "#EC4899",
+      "styles": {
+        "gradient-start": "#F9A8D4",
+        "gradient-end": "#EC4899",
+        "glow-color": "rgba(244, 114, 182, 0.3)"
+      }
+    }
+  },
+  "fields": [
+    {
+      "key": "name",
+      "label": "名称",
+      "type": "TEXT",
+      "required": true,
+      "placeholder": "如：炎龙兽"
+    },
+    {
+      "key": "type",
+      "label": "属性",
+      "type": "ENUM",
+      "required": true,
+      "defaultValue": "火",
+      "options": "[\"火\",\"水\",\"草\",\"电\",\"超能力\",\"格斗\",\"岩石\",\"地面\",\"飞行\",\"虫\",\"毒\",\"一般\",\"幽灵\",\"冰\",\"龙\",\"恶\",\"钢\",\"妖精\"]"
+    },
+    {
+      "key": "hp",
+      "label": "HP",
+      "type": "NUMBER",
+      "required": false,
+      "defaultValue": "100",
+      "placeholder": "生命值"
+    },
+    {
+      "key": "attack",
+      "label": "攻击",
+      "type": "NUMBER",
+      "required": false,
+      "defaultValue": "80",
+      "placeholder": "攻击力"
+    },
+    {
+      "key": "defense",
+      "label": "防御",
+      "type": "NUMBER",
+      "required": false,
+      "defaultValue": "70",
+      "placeholder": "防御力"
+    },
+    {
+      "key": "speed",
+      "label": "速度",
+      "type": "NUMBER",
+      "required": false,
+      "defaultValue": "65",
+      "placeholder": "速度"
+    },
+    {
+      "key": "spatk",
+      "label": "特攻",
+      "type": "NUMBER",
+      "required": false,
+      "defaultValue": "90",
+      "placeholder": "特殊攻击"
+    },
+    {
+      "key": "spdef",
+      "label": "特防",
+      "type": "NUMBER",
+      "required": false,
+      "defaultValue": "75",
+      "placeholder": "特殊防御"
+    },
+    {
+      "key": "cp",
+      "label": "CP",
+      "type": "NUMBER",
+      "required": false,
+      "defaultValue": "500",
+      "placeholder": "战斗力"
+    },
+    {
+      "key": "level",
+      "label": "等级",
+      "type": "NUMBER",
+      "required": false,
+      "defaultValue": "50",
+      "placeholder": "Lv."
+    },
+    {
+      "key": "skills",
+      "label": "技能",
+      "type": "ARRAY",
+      "required": false,
+      "fields": [
+        {
+          "key": "name",
+          "label": "技能名称",
+          "type": "TEXT",
+          "required": true,
+          "placeholder": "如：火焰吐息"
+        }
+      ]
+    },
+    {
+      "key": "description",
+      "label": "描述",
+      "type": "TEXTAREA",
+      "required": false,
+      "placeholder": "输入图鉴描述..."
+    },
+    {
+      "key": "image",
+      "label": "角色图片",
+      "type": "IMAGE",
+      "required": true
+    }
+  ],
+  "assets": {
+    "backgrounds": {
+      "fire-bg": "backgrounds/fire.svg",
+      "water-bg": "backgrounds/water.svg",
+      "grass-bg": "backgrounds/grass.svg",
+      "electric-bg": "backgrounds/electric.svg",
+      "psychic-bg": "backgrounds/psychic.svg",
+      "fighting-bg": "backgrounds/fighting.svg",
+      "rock-bg": "backgrounds/rock.svg",
+      "ground-bg": "backgrounds/ground.svg",
+      "flying-bg": "backgrounds/flying.svg",
+      "bug-bg": "backgrounds/bug.svg",
+      "poison-bg": "backgrounds/poison.svg",
+      "normal-bg": "backgrounds/normal.svg",
+      "ghost-bg": "backgrounds/ghost.svg",
+      "ice-bg": "backgrounds/ice.svg",
+      "dragon-bg": "backgrounds/dragon.svg",
+      "dark-bg": "backgrounds/dark.svg",
+      "steel-bg": "backgrounds/steel.svg",
+      "fairy-bg": "backgrounds/fairy.svg"
+    },
+    "icons": {
+      "fire": "icons/fire.svg",
+      "water": "icons/water.svg",
+      "grass": "icons/grass.svg",
+      "electric": "icons/electric.svg",
+      "psychic": "icons/psychic.svg",
+      "fighting": "icons/fighting.svg",
+      "rock": "icons/rock.svg",
+      "ground": "icons/ground.svg",
+      "flying": "icons/flying.svg",
+      "bug": "icons/bug.svg",
+      "poison": "icons/poison.svg",
+      "normal": "icons/normal.svg",
+      "ghost": "icons/ghost.svg",
+      "ice": "icons/ice.svg",
+      "dragon": "icons/dragon.svg",
+      "dark": "icons/dark.svg",
+      "steel": "icons/steel.svg",
+      "fairy": "icons/fairy.svg"
+    },
+    "frames": {
+      "default": "frames/default.svg",
+      "rare": "frames/rare.svg",
+      "epic": "frames/epic.svg",
+      "legendary": "frames/legendary.svg"
+    },
+    "fonts": {}
+  },
+  "metadata": {
+    "createTime": "2026-07-01T00:00:00",
+    "updateTime": "2026-07-16T00:00:00",
+    "templateVersion": "1.0.0",
+    "minAppVersion": "0.1.0"
+  }
+}

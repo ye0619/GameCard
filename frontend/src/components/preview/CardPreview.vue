@@ -1,49 +1,76 @@
 <script setup lang="ts">
+/**
+ * CardPreview - 卡片预览组件
+ *
+ * 核心职责：根据模板 + 卡片数据动态渲染游戏卡片。
+ *
+ * 设计原则：
+ * - 零硬编码：不写 if(type==="fire") 条件，所有主题来自 template.themeMapping
+ * - 组件化：拆分为 CardContainer / CardBackground / CardHeader / CardImage / CardStats / CardSkills / CardDescription
+ * - 配置驱动：template.json 决定渲染什么字段、什么主题
+ */
 import { computed } from 'vue'
 import { useCardStore } from '@/stores/card'
+import { resolveTheme, parseSkills } from '@/utils/themeResolver'
+
+import CardContainer from '@/components/card/CardContainer.vue'
+import CardBackground from '@/components/card/CardBackground.vue'
+import CardHeader from '@/components/card/CardHeader.vue'
+import CardImage from '@/components/card/CardImage.vue'
+import CardStats from '@/components/card/CardStats.vue'
+import CardSkills from '@/components/card/CardSkills.vue'
+import CardDescription from '@/components/card/CardDescription.vue'
 
 const store = useCardStore()
 
-/** 属性 → 颜色映射 */
-const typeColors: Record<string, string> = {
-  '火': '#EF4444',
-  '水': '#3B82F6',
-  '草': '#22C55E',
-  '电': '#EAB308',
-  '超能力': '#A855F7',
-  '格斗': '#F97316',
-  '岩石': '#A16207',
-  '地面': '#D97706',
-  '飞行': '#60A5FA',
-  '虫': '#84CC16',
-  '毒': '#D946EF',
-  '一般': '#9CA3AF',
-  '幽灵': '#8B5CF6',
-  '冰': '#06B6D4',
-  '龙': '#6366F1',
-  '恶': '#78350F',
-  '钢': '#6B7280',
-  '妖精': '#F472B6',
-}
+/** 解析当前主题 */
+const theme = computed(() => resolveTheme(store.selectedTemplate, store.cardData))
 
-/** 稀有度 → 颜色映射 */
-const rarityColors: Record<string, string> = {
-  '普通': '#9CA3AF',
-  '稀有': '#3B82F6',
-  '史诗': '#A855F7',
-  '传说': '#F59E0B',
-}
+/** 是否有数据 */
+const hasData = computed(() => {
+  const data = store.cardData
+  return Object.keys(data).length > 0 &&
+    Object.values(data).some(v => v && v.trim() !== '')
+})
 
-const element = computed(() => store.cardData['element'] ?? '')
-const elementColor = computed(() => typeColors[element.value] ?? '#6366F1')
-const rarity = computed(() => store.cardData['rarity'] ?? '')
-const rarityColor = computed(() => rarityColors[rarity.value] ?? '#9CA3AF')
+/** 提取数值属性给 CardStats */
+const statValues = computed(() => {
+  const data = store.cardData
+  const statKeys = ['hp', 'attack', 'defense', 'spatk', 'spdef', 'speed']
+  const stats: Record<string, number> = {}
+  for (const key of statKeys) {
+    const val = data[key]
+    stats[key] = val ? parseInt(String(val), 10) || 0 : 0
+  }
+  return stats
+})
 
+/** 角色名称 */
 const name = computed(() => store.cardData['name'] ?? '')
-const skill = computed(() => store.cardData['skill'] ?? '')
+
+/** 属性类型 */
+const type = computed(() => store.cardData['type'] ?? '')
+
+/** 等级 */
+const level = computed(() => store.cardData['level'] ?? '')
+
+/** CP */
+const cp = computed(() => store.cardData['cp'] ?? '')
+
+/** 技能 */
+const skills = computed(() => {
+  const raw = store.cardData['skills']
+  return raw || ''
+})
+
+/** 描述 */
 const description = computed(() => store.cardData['description'] ?? '')
-const hasImage = computed(() => !!store.uploadedImage)
-const hasData = computed(() => name.value || skill.value || description.value || hasImage.value)
+
+/** 上传图片 */
+const image = computed(() => store.uploadedImage)
+
+/** 模板名称 */
+const templateName = computed(() => store.selectedTemplate?.name ?? '')
 </script>
 
 <template>
@@ -55,110 +82,64 @@ const hasData = computed(() => name.value || skill.value || description.value ||
           d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
       </svg>
       <p class="text-lg font-medium">等待卡片编辑</p>
-      <p class="text-sm mt-1">上传图片并填写信息，右侧将实时预览</p>
+      <p class="text-sm mt-1">填写左侧信息，右侧将实时预览</p>
     </div>
 
     <!-- 卡片预览 -->
     <div v-else class="relative" style="width: 380px;">
-      <!-- 卡片容器 -->
-      <div
-        class="relative rounded-2xl overflow-hidden shadow-2xl border-2 transition-all duration-300"
-        :style="{ borderColor: elementColor }"
-      >
-        <!-- 顶部装饰条 -->
-        <div class="h-2" :style="{ background: `linear-gradient(90deg, ${elementColor}, ${elementColor}88)` }"></div>
+      <CardContainer :theme="theme">
+        <!-- 背景 -->
+        <CardBackground
+          :theme="theme"
+          :template="store.selectedTemplate"
+        />
 
-        <!-- 内卡片 -->
-        <div class="bg-gradient-to-b from-gray-900 to-gray-950 p-5">
-          <!-- 图片区域 -->
-          <div
-            class="relative rounded-xl overflow-hidden mb-4 bg-gray-800"
-            style="aspect-ratio: 16 / 10;"
-          >
-            <img
-              v-if="store.uploadedImage"
-              :src="store.uploadedImage"
-              alt="卡片图片"
-              class="w-full h-full object-cover"
-            />
-            <div
-              v-else
-              class="flex items-center justify-center h-full text-gray-600 text-sm"
-            >
-              暂无图片
-            </div>
+        <!-- 内容区（在背景之上） -->
+        <div class="relative z-10">
+          <!-- 头部 -->
+          <CardHeader
+            :name="name"
+            :type="type"
+            :theme="theme"
+            :template="store.selectedTemplate"
+            :level="level"
+            :cp="cp"
+          />
 
-            <!-- 类型标签 -->
-            <div
-              v-if="element"
-              class="absolute top-2 left-2 px-2.5 py-1 rounded-full text-xs font-bold text-white shadow-lg"
-              :style="{ backgroundColor: elementColor }"
-            >
-              {{ element }}
-            </div>
+          <!-- 图片 -->
+          <CardImage
+            :image="image"
+            :name="name"
+          />
 
-            <!-- 稀有度标签 -->
-            <div
-              v-if="rarity"
-              class="absolute top-2 right-2 px-2.5 py-1 rounded-full text-xs font-bold text-white shadow-lg"
-              :style="{ backgroundColor: rarityColor, opacity: 0.9 }"
-            >
-              ★ {{ rarity }}
-            </div>
-          </div>
-
-          <!-- 名称 -->
-          <h2
-            v-if="name"
-            class="text-xl font-bold text-white mb-1"
-            :style="{ color: elementColor }"
-          >
-            {{ name }}
-          </h2>
-
-          <!-- 属性线 -->
-          <div v-if="element || rarity" class="flex items-center gap-2 text-xs text-gray-400 mb-3">
-            <span v-if="element" :style="{ color: elementColor }">● {{ element }}</span>
-            <span v-if="element && rarity" class="text-gray-600">|</span>
-            <span v-if="rarity" :style="{ color: rarityColor }">{{ rarity }}</span>
-          </div>
-
-          <!-- 分割线 -->
-          <div class="h-px bg-gradient-to-r from-transparent via-gray-600 to-transparent my-3"></div>
+          <!-- 属性 -->
+          <CardStats
+            :theme="theme"
+            :stats="statValues"
+          />
 
           <!-- 技能 -->
-          <div v-if="skill" class="mb-3">
-            <div class="flex items-start gap-2">
-              <div
-                class="mt-0.5 w-5 h-5 rounded flex items-center justify-center text-xs font-bold text-white shrink-0"
-                :style="{ backgroundColor: elementColor }"
-              >
-                ⚡
-              </div>
-              <div>
-                <span class="text-xs text-gray-400">技能</span>
-                <p class="text-sm text-gray-200">{{ skill }}</p>
-              </div>
-            </div>
-          </div>
+          <CardSkills
+            :theme="theme"
+            :skills="skills"
+          />
 
           <!-- 描述 -->
-          <div v-if="description" class="mt-2">
-            <p class="text-xs leading-relaxed text-gray-400 italic border-l-2 border-gray-700 pl-3">
-              {{ description }}
-            </p>
-          </div>
+          <CardDescription
+            :description="description"
+            :theme="theme"
+          />
 
           <!-- 底部署名 -->
-          <div class="mt-4 pt-3 border-t border-gray-800 flex justify-between text-xs text-gray-600">
+          <div class="mt-4 pt-3 border-t border-gray-800 flex justify-between text-[10px] text-gray-500">
             <span>GameCard</span>
-            <span>{{ store.selectedTemplate?.name ?? '' }}</span>
+            <span>{{ templateName }}</span>
           </div>
         </div>
-      </div>
+      </CardContainer>
 
       <!-- 尺寸提示 -->
-      <p class="text-center text-xs text-gray-600 mt-3">380 × 520 · 实时预览</p>
+      <p class="text-center text-xs text-gray-600 mt-3">380 × 自动 · 实时预览</p>
     </div>
   </div>
 </template>

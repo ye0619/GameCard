@@ -17,6 +17,10 @@ export default defineConfig({
         target: 'http://localhost:8080',
         changeOrigin: true,
       },
+      '/templates': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+      },
     },
   },
 })

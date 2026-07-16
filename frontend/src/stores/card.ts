@@ -42,6 +42,10 @@ export const useCardStore = defineStore('card', () => {
       for (const field of tpl.fields) {
         data[field.key] = field.defaultValue ?? ''
       }
+      // 如果 themeField 有默认值但对应字段没初始化，补上
+      if (tpl.themeField && !data[tpl.themeField]) {
+        data[tpl.themeField] = ''
+      }
       cardData.value = data
     }
   }

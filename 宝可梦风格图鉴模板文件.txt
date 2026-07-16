@@ -1,0 +1,350 @@
+index.html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Pokemon Let's Go UI</title>
+  <link rel="stylesheet" href="pokemon-ui.css">
+</head>
+<body>
+<div class="pokemon-panel">
+  <!-- 左侧技能列表 -->
+  <div class="skill-list">
+    <div class="skill-item">
+      <span class="skill-circle"></span>
+      <span class="skill-name">Tackle</span>
+      <span class="skill-pp">35/35</span>
+    </div>
+    <div class="skill-item">
+      <span class="skill-circle"></span>
+      <span class="skill-name">Tail Whip</span>
+      <span class="skill-pp">30/30</span>
+    </div>
+    <div class="skill-item active-skill">
+      <span class="skill-circle water"></span>
+      <span class="skill-name">Bubble</span>
+      <span class="skill-pp">30/30</span>
+    </div>
+  </div>
+
+  <!-- 中央宝可梦立绘 -->
+  <div class="pokemon-sprite">
+    <img src="squirtle.png" alt="Squirtle">
+  </div>
+
+  <!-- 右侧属性雷达+数值 -->
+  <div class="stat-container">
+    <!-- 右上角CP -->
+    <div class="cp-box">
+      <span class="cp-label">CP</span>
+      <span class="cp-value">83</span>
+    </div>
+    <!-- HP -->
+    <div class="stat-hp">
+      <div class="stat-label">HP</div>
+      <div class="stat-num">033/033</div>
+    </div>
+    <!-- 六边形雷达图容器 -->
+    <div class="hex-radar-wrap">
+      <svg class="hex-radar" viewBox="0 0 220 200">
+        <!-- 外六边形边框 -->
+        <polygon points="110,10 200,55 200,145 110,190 20,145 20,55" fill="rgba(255,255,255,0.1)" stroke="#88ee66" stroke-width="4"/>
+        <!-- 内中心六边形 -->
+        <polygon points="110,70 140,85 140,115 110,130 80,115 80,85" fill="#c8ee90"/>
+        <!-- 分割线 -->
+        <line x1="110" y1="10" x2="110" y2="190" stroke="#aadd77" stroke-width="1"/>
+        <line x1="200" y1="55" x2="20" y2="145" stroke="#aadd77" stroke-width="1"/>
+        <line x1="200" y1="145" x2="20" y2="55" stroke="#aadd77" stroke-width="1"/>
+      </svg>
+      <!-- 六维数值文字 -->
+      <div class="stat-text spatk">
+        <div class="stat-txt-label">Sp. Atk</div>
+        <div class="stat-txt-val">018</div>
+      </div>
+      <div class="stat-text attack">
+        <div class="stat-txt-label">Attack</div>
+        <div class="stat-txt-val">016</div>
+      </div>
+      <div class="stat-text defense">
+        <div class="stat-txt-label">Defense</div>
+        <div class="stat-txt-val">021</div>
+      </div>
+      <div class="stat-text speed">
+        <div class="stat-txt-label">Speed</div>
+        <div class="stat-txt-val">014</div>
+      </div>
+      <div class="stat-text spdef">
+        <div class="stat-txt-label">Sp. Def</div>
+        <div class="stat-txt-val">023</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 右下角宝可梦信息卡片 -->
+  <div class="info-card">
+    <span class="pokemon-name">Squirtle</span>
+    <span class="gender male">♂</span>
+    <span class="level">Lv. 11</span>
+    <div class="type-icons">
+      <span class="ball-icon"></span>
+      <span class="water-icon">💧 WATER</span>
+    </div>
+  </div>
+
+  <!-- 底部切换按钮 -->
+  <div class="switch-btn">
+    <span class="arrow-left">◀</span>
+    <span class="btn-text">Switch</span>
+  </div>
+
+  <!-- 最底部操作提示栏 -->
+  <div class="bottom-hint">
+    <span class="hint-left">← → Change Pokémon</span>
+    <span class="hint-right">
+      <span class="key-y">Y</span> Move Info
+      <span class="key-b">B</span> Back
+    </span>
+  </div>
+</div>
+</body>
+</html>
+
+
+pokemon-ui.css（核心样式文件）
+/* 全局重置 & 基础背景 */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial, Helvetica, sans-serif;
+  color: #fff;
+}
+body {
+  background: linear-gradient(160deg, #20c0e0 0%, #60e0f5 40%, #b0f0f8 100%);
+  min-height: 100vh;
+  overflow: hidden;
+}
+.pokemon-panel {
+  width: 1707px;
+  height: 960px;
+  position: relative;
+  margin: 0 auto;
+  background-image: url('bubble-bg.png'); /* 气泡模糊背景图，可替换渐变 */
+  background-size: cover;
+  background-position: center;
+}
+
+/* ========== 左侧技能栏 ========== */
+.skill-list {
+  position: absolute;
+  top: 20px;
+  left: 10px;
+  width: 380px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.skill-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: rgba(255,255,255,0.22);
+  border-radius: 6px;
+}
+.active-skill {
+  background: rgba(60, 180, 240, 0.45);
+}
+.skill-circle {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  background: transparent;
+}
+.skill-circle.water {
+  background: #30b8f0;
+}
+.skill-name {
+  font-size: 24px;
+  font-weight: 500;
+  flex: 1;
+  margin-left: 12px;
+}
+.skill-pp {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+/* ========== 中央杰尼龟立绘 ========== */
+.pokemon-sprite {
+  position: absolute;
+  left: 36%;
+  top: 46%;
+  transform: translate(-50%, -50%);
+}
+.pokemon-sprite img {
+  width: 360px;
+}
+
+/* ========== 右侧六维雷达区域 ========== */
+.stat-container {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 480px;
+}
+/* 右上角CP框 */
+.cp-box {
+  position: absolute;
+  right: 0;
+  top: 0;
+  background: rgba(255,255,255,0.25);
+  padding: 4px 16px;
+  border-radius: 20px;
+  display: flex;
+  gap: 24px;
+  align-items: center;
+}
+.cp-label {
+  font-size: 22px;
+  font-weight: bold;
+}
+.cp-value {
+  font-size: 28px;
+  font-weight: bold;
+}
+/* HP数值 */
+.stat-hp {
+  text-align: center;
+  margin-top: 40px;
+}
+.stat-label {
+  font-size: 26px;
+  font-weight: bold;
+}
+.stat-num {
+  font-size: 32px;
+  font-weight: bold;
+}
+/* 六边形雷达容器 */
+.hex-radar-wrap {
+  position: relative;
+  width: 220px;
+  height: 200px;
+  margin: 10px auto;
+}
+.hex-radar {
+  width: 100%;
+  height: 100%;
+}
+/* 六维文字定位 */
+.stat-text {
+  position: absolute;
+  font-weight: bold;
+}
+.spatk { top: -10px; left: -60px; text-align: right; }
+.attack { top: 20px; right: -70px; text-align: left; }
+.defense { bottom: 40px; right: -70px; text-align: left; }
+.speed { bottom: -20px; left: 50%; transform: translateX(-50%); text-align: center; }
+.spdef { bottom: 40px; left: -60px; text-align: right; }
+.stat-txt-label { font-size: 18px; }
+.stat-txt-val { font-size: 24px; }
+
+/* ========== 右下角宝可梦信息卡片 ========== */
+.info-card {
+  position: absolute;
+  bottom: 140px;
+  right: 10px;
+  background: rgba(0,0,0,0.45);
+  border-radius: 12px;
+  padding: 14px 20px;
+  width: 460px;
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.pokemon-name {
+  font-size: 42px;
+  font-weight: 500;
+}
+.gender.male {
+  color: #40a0ff;
+  font-size: 32px;
+}
+.level {
+  font-size: 28px;
+  margin-left: auto;
+}
+.type-icons {
+  width: 100%;
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+  align-items: center;
+}
+.ball-icon {
+  width: 30px;
+  height: 30px;
+  background: radial-gradient(circle, #ff4444 50%, #fff 52%, #333 55%);
+  border-radius: 50%;
+}
+.water-icon {
+  font-size: 20px;
+  background: rgba(40,160,240,0.6);
+  padding: 4px 10px;
+  border-radius: 16px;
+}
+
+/* ========== 底部黄色Switch按钮 ========== */
+.switch-btn {
+  position: absolute;
+  bottom: 60px;
+  left: 120px;
+  width: 520px;
+  height: 64px;
+  background: linear-gradient(90deg, #ffdd22, #ffee66);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  padding-left: 16px;
+  box-shadow: inset 0 0 0 3px #fff;
+}
+.arrow-left {
+  color: #222;
+  font-size: 32px;
+}
+.btn-text {
+  color: #222;
+  font-size: 30px;
+  font-weight: bold;
+  margin-left: 160px;
+}
+
+/* ========== 最底部操作提示栏 ========== */
+.bottom-hint {
+  position: absolute;
+  bottom: 10px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-between;
+  padding: 0 10px;
+  font-size: 18px;
+}
+.key-y, .key-b {
+  display: inline-block;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #30c830;
+  color: #000;
+  text-align: center;
+  font-weight: bold;
+  margin: 0 6px;
+}
+.hint-right {
+  display: flex;
+  gap: 20px;
+}

@@ -1,13 +1,55 @@
+// ===================== 模板字段定义 =====================
+
+/** 模板字段类型 */
+export type FieldType = 'TEXT' | 'TEXTAREA' | 'IMAGE' | 'NUMBER' | 'SELECT' | 'ENUM' | 'ARRAY' | 'COLOR'
+
 /** 模板字段定义 */
 export interface TemplateField {
   key: string
   label: string
-  type: 'TEXT' | 'TEXTAREA' | 'IMAGE' | 'NUMBER' | 'SELECT' | 'COLOR'
+  type: FieldType
   required: boolean
   defaultValue: string | null
   placeholder: string | null
-  options: string | null // JSON 数组字符串
+  options: string | null // JSON 数组字符串（SELECT / ENUM 类型）
+  fields: TemplateField[] | null // ARRAY 类型的子字段定义
 }
+
+// ===================== 主题映射 =====================
+
+/** 主题映射条目（属性值 → 视觉主题） */
+export interface ThemeMappingItem {
+  /** 背景标识（对应 assets.backgrounds 中的键） */
+  background: string
+  /** 主色调（十六进制，如 "#EF4444"） */
+  color: string
+  /** 图标标识（对应 assets.icons 中的键） */
+  icon: string
+  /** 辅助色 */
+  secondaryColor?: string
+  /** 扩展样式变量 */
+  styles?: Record<string, string>
+}
+
+// ===================== 模板资产 =====================
+
+/** 模板资源定义 */
+export interface TemplateAssets {
+  backgrounds: Record<string, string> | null
+  icons: Record<string, string> | null
+  frames: Record<string, string> | null
+  fonts: Record<string, string> | null
+}
+
+// ===================== 尺寸 =====================
+
+/** 卡片尺寸 */
+export interface TemplateSize {
+  width: number
+  height: number
+}
+
+// ===================== 模板元数据 =====================
 
 /** 模板元数据 */
 export interface TemplateMetadata {
@@ -17,7 +59,9 @@ export interface TemplateMetadata {
   minAppVersion: string
 }
 
-/** 模板 */
+// ===================== 模板 =====================
+
+/** 模板 - 游戏卡片模板的核心模型 */
 export interface Template {
   id: string
   name: string
@@ -26,14 +70,28 @@ export interface Template {
   version: string
   previewImage: string
   tags: string[]
+  /** 卡片尺寸 */
+  size: TemplateSize | null
+  /** 字段定义列表 */
   fields: TemplateField[]
+  /** 主题映射表：字段值 → 主题配置 */
+  themeMapping: Record<string, ThemeMappingItem> | null
+  /** 主题映射来源字段（如 "type"） */
+  themeField: string | null
+  /** 模板资源 */
+  assets: TemplateAssets | null
+  /** 模板元数据 */
   metadata: TemplateMetadata
 }
+
+// ===================== 卡片数据 =====================
 
 /** 卡片数据（用户填写的内容） */
 export interface CardData {
   [key: string]: string
 }
+
+// ===================== API 响应 =====================
 
 /** API 统一返回 */
 export interface ApiResult<T> {

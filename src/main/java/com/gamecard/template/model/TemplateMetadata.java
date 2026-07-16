@@ -5,12 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
-
 /**
- * 模板元数据
- * <p>
- * 记录模板的版本、创建时间等元信息。
+ * Template metadata (versioning, timestamps as ISO strings).
  *
  * @author GameCard Team
  */
@@ -20,16 +16,16 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class TemplateMetadata {
 
-    /** 创建时间 */
-    private LocalDateTime createTime;
+    /** Creation time (ISO-8601 string, e.g. "2026-07-01T00:00:00") */
+    private String createTime;
 
-    /** 最后更新时间 */
-    private LocalDateTime updateTime;
+    /** Last update time (ISO-8601 string) */
+    private String updateTime;
 
-    /** 模板内部版本号 */
+    /** Template internal version */
     private String templateVersion;
 
-    /** 兼容的最低 GameCard 版本 */
+    /** Minimum compatible GameCard version */
     private String minAppVersion;
 
 }
