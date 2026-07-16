@@ -1,20 +1,20 @@
 <script setup lang="ts">
 /**
- * CardEditor - 卡片数据编辑器
+ * CardEditor — property panel for card data.
  *
- * 根据模板字段定义动态渲染编辑表单。
- * 支持 TEXT / TEXTAREA / NUMBER / SELECT / ENUM / ARRAY / COLOR / IMAGE 类型。
- * 所有字段由 template.fields 驱动，无硬编码字段。
+ * Renders form fields from template.fields definitions.
+ * Supports TEXT / TEXTAREA / NUMBER / SELECT / ENUM / ARRAY / COLOR / IMAGE.
+ * Compact styling for use as a right-side property panel.
  */
 import { computed, ref, watch } from 'vue'
 import { useCardStore } from '@/stores/card'
 import type { TemplateField } from '@/types'
+import EmptyState from '@/components/common/EmptyState.vue'
 
 const store = useCardStore()
 
 const fields = computed(() => store.selectedTemplate?.fields ?? [])
 
-/** 解析 SELECT / ENUM 选项 */
 function parseOptions(raw: string | null): string[] {
   if (!raw) return []
   try {
@@ -24,17 +24,14 @@ function parseOptions(raw: string | null): string[] {
   }
 }
 
-/** 判断是否为数值字段 */
 function isNumericField(field: TemplateField): boolean {
   return field.type === 'NUMBER'
 }
 
-// ==================== ARRAY 类型支持（如技能列表） ====================
+// ==================== ARRAY support ====================
 
-/** 编辑中的数组条目 */
 const arrayEntries = ref<Record<string, string[]>>({})
 
-/** 获取某个数组字段的当前条目 */
 function getArray(field: TemplateField): string[] {
   const key = field.key
   if (!arrayEntries.value[key]) {
@@ -43,18 +40,15 @@ function getArray(field: TemplateField): string[] {
   return arrayEntries.value[key]
 }
 
-/** 添加数组条目 */
 function addArrayItem(field: TemplateField): void {
   const key = field.key
   if (!arrayEntries.value[key]) {
     arrayEntries.value[key] = []
   }
-  // 推入空字符串
   arrayEntries.value[key].push('')
   syncArrayToCard(field)
 }
 
-/** 删除数组条目 */
 function removeArrayItem(field: TemplateField, index: number): void {
   const key = field.key
   if (!arrayEntries.value[key]) return
@@ -62,11 +56,9 @@ function removeArrayItem(field: TemplateField, index: number): void {
   syncArrayToCard(field)
 }
 
-/** 将数组同步为 cardData 中的 JSON 字符串 */
 function syncArrayToCard(field: TemplateField): void {
   const key = field.key
   const items = arrayEntries.value[key] ?? []
-  // 生成 ARRAY 子字段的 JSON
   const subField = field.fields?.[0]
   if (subField) {
     const json = items
@@ -78,192 +70,327 @@ function syncArrayToCard(field: TemplateField): void {
   }
 }
 
-/** 从 cardData 初始化数组条目 */
-function initArrayFromCard(field: TemplateField): void {
-  const key = field.key
-  const raw = store.cardData[key]
-  if (!raw || raw.trim() === '') {
-    arrayEntries.value[key] = []
-    return
-  }
-
-  // 尝试 JSON 数组
-  if (raw.trim().startsWith('[')) {
-    try {
-      const parsed = JSON.parse(raw)
-      if (Array.isArray(parsed)) {
-        const subField = field.fields?.[0]
-        arrayEntries.value[key] = parsed.map((item: unknown) => {
-          if (typeof item === 'string') return item
-          if (subField && typeof item === 'object' && item !== null) {
-            return String((item as Record<string, unknown>)[subField.key] ?? '')
-          }
-          return String(item)
-        })
-        return
-      }
-    } catch { /* fallthrough */ }
-  }
-
-  // 逗号分隔
-  if (raw.includes(',')) {
-    arrayEntries.value[key] = raw.split(',').map(s => s.trim()).filter(Boolean)
-    return
-  }
-
-  // 单条
-  arrayEntries.value[key] = [raw.trim()]
-}
-
-/** 监听模板切换，重置数组条目 */
 watch(() => store.selectedTemplateId, () => {
   arrayEntries.value = {}
 })
 </script>
 
 <template>
-  <div class="space-y-4">
-    <label class="text-sm font-medium text-gray-300">卡片信息</label>
+  <div class="editor-form">
+    <!-- No template -->
+    <EmptyState
+      v-if="fields.length === 0"
+      title="请先选择模板"
+      description="选择模板后将显示可编辑的属性"
+    />
 
-    <!-- 无模板 -->
-    <div v-if="fields.length === 0" class="text-sm text-gray-500 py-4">
-      请先选择一个模板
-    </div>
-
-    <!-- 动态表单 -->
-    <div v-else class="space-y-3">
-      <div v-for="field in fields" :key="field.key" class="space-y-1">
-        <!-- 标签 -->
-        <label class="block text-xs text-gray-400">
+    <!-- Dynamic fields -->
+    <div v-else class="editor-form__fields">
+      <div
+        v-for="field in fields"
+        :key="field.key"
+        class="editor-form__group"
+      >
+        <label class="editor-form__label">
           {{ field.label }}
-          <span v-if="field.required" class="text-red-400 ml-0.5">*</span>
+          <span v-if="field.required" class="editor-form__required">*</span>
         </label>
 
-        <!-- ====== TEXT ====== -->
+        <!-- TEXT -->
         <input
           v-if="field.type === 'TEXT'"
           v-model="store.cardData[field.key]"
           type="text"
           :placeholder="field.placeholder ?? ''"
-          class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-gray-100 placeholder-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition"
+          class="editor-form__input"
         />
 
-        <!-- ====== TEXTAREA ====== -->
+        <!-- TEXTAREA -->
         <textarea
           v-else-if="field.type === 'TEXTAREA'"
           v-model="store.cardData[field.key]"
           :placeholder="field.placeholder ?? ''"
-          rows="3"
-          class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-gray-100 placeholder-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition resize-none"
+          rows="2"
+          class="editor-form__input editor-form__textarea"
         />
 
-        <!-- ====== NUMBER ====== -->
+        <!-- NUMBER -->
         <input
           v-else-if="isNumericField(field)"
           v-model.number="store.cardData[field.key]"
           type="number"
           :placeholder="field.placeholder ?? ''"
-          class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-gray-100 placeholder-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition"
+          class="editor-form__input"
         />
 
-        <!-- ====== SELECT ====== -->
+        <!-- SELECT -->
         <select
           v-else-if="field.type === 'SELECT'"
           v-model="store.cardData[field.key]"
-          class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-gray-100 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition appearance-none"
+          class="editor-form__input editor-form__select"
         >
           <option value="" disabled>{{ field.placeholder ?? '请选择' }}</option>
           <option
             v-for="opt in parseOptions(field.options)"
             :key="opt"
             :value="opt"
-          >
-            {{ opt }}
-          </option>
+          >{{ opt }}</option>
         </select>
 
-        <!-- ====== ENUM（标签组选择器） ====== -->
+        <!-- ENUM -->
         <div
           v-else-if="field.type === 'ENUM'"
-          class="flex flex-wrap gap-1.5"
+          class="editor-form__enum"
         >
           <button
             v-for="opt in parseOptions(field.options)"
             :key="opt"
+            class="editor-form__enum-tag"
+            :class="{ 'is-selected': store.cardData[field.key] === opt }"
             @click="store.cardData[field.key] = opt"
-            :class="[
-              'px-2.5 py-1 rounded-lg text-xs font-medium border transition-all',
-              store.cardData[field.key] === opt
-                ? 'text-white border-transparent shadow-sm'
-                : 'text-gray-400 border-gray-700 bg-gray-800/50 hover:border-gray-500 hover:text-gray-300',
-            ]"
-            :style="store.cardData[field.key] === opt ? {
-              backgroundColor: '#3B82F6',
-              borderColor: '#3B82F6',
-            } : {}"
-          >
-            {{ opt }}
-          </button>
+          >{{ opt }}</button>
         </div>
 
-        <!-- ====== ARRAY（动态增删列表） ====== -->
-        <div v-else-if="field.type === 'ARRAY'" class="space-y-1.5">
-          <!-- 现有条目 -->
+        <!-- ARRAY -->
+        <div v-else-if="field.type === 'ARRAY'" class="editor-form__array">
           <div
             v-for="(item, idx) in getArray(field)"
             :key="idx"
-            class="flex items-center gap-1.5"
+            class="editor-form__array-row"
           >
             <input
               v-model="arrayEntries[field.key][idx]"
               type="text"
-              :placeholder="field.fields?.[0]?.placeholder ?? '输入' + field.label"
-              class="flex-1 px-2.5 py-1.5 bg-gray-800 border border-gray-700 rounded-lg text-xs text-gray-100 placeholder-gray-500 focus:border-blue-500 outline-none transition"
+              :placeholder="field.fields?.[0]?.placeholder ?? ''"
+              class="editor-form__input editor-form__array-input"
               @input="syncArrayToCard(field)"
             />
             <button
-              @click="removeArrayItem(field, idx)"
-              class="w-6 h-6 flex items-center justify-center rounded text-gray-500 hover:text-red-400 hover:bg-red-500/10 transition-colors shrink-0"
+              class="editor-form__array-remove"
               title="删除"
+              @click="removeArrayItem(field, idx)"
             >
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
               </svg>
             </button>
           </div>
-
-          <!-- 添加按钮 -->
           <button
+            class="editor-form__array-add"
             @click="addArrayItem(field)"
-            class="flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300 transition-colors py-1"
           >
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
             </svg>
-            <span>添加{{ field.label }}</span>
+            <span>添加</span>
           </button>
         </div>
 
-        <!-- ====== COLOR ====== -->
-        <div v-else-if="field.type === 'COLOR'" class="flex items-center gap-2">
+        <!-- COLOR -->
+        <div v-else-if="field.type === 'COLOR'" class="editor-form__color">
           <input
             v-model="store.cardData[field.key]"
             type="color"
-            class="w-10 h-10 rounded cursor-pointer border border-gray-700 bg-gray-800"
+            class="editor-form__color-picker"
           />
-          <span class="text-xs text-gray-500">{{ store.cardData[field.key] }}</span>
+          <span class="editor-form__color-value">{{ store.cardData[field.key] }}</span>
         </div>
 
-        <!-- ====== IMAGE（由 ImageUploader 处理） ====== -->
-        <div v-else-if="field.type === 'IMAGE'" class="text-xs text-gray-500">
-          请使用上方的图片上传区域
-        </div>
-
-        <!-- 必填提示 -->
-        <p v-if="field.required && (!store.cardData[field.key] || store.cardData[field.key] === '')" class="text-xs text-amber-400">
-          此字段为必填项
+        <!-- IMAGE hint -->
+        <p v-else-if="field.type === 'IMAGE'" class="editor-form__image-hint">
+          请使用左侧上传区域
         </p>
+
+        <!-- Required hint -->
+        <p
+          v-if="field.required && (!store.cardData[field.key] || store.cardData[field.key] === '')"
+          class="editor-form__error"
+        >此字段为必填项</p>
       </div>
     </div>
   </div>
 </template>
+
+<style scoped>
+/* Property-panel form — compact, dense */
+.editor-form__fields {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.editor-form__group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.editor-form__label {
+  font-family: var(--gc-font-sans);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--gc-ink);
+  opacity: 0.6;
+}
+
+.editor-form__required {
+  color: var(--gc-accent-magenta);
+  margin-left: 2px;
+}
+
+/* Inputs — compact, surface-soft background, no border until focus */
+.editor-form__input {
+  width: 100%;
+  padding: 6px 10px;
+  font-family: var(--gc-font-sans);
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--gc-ink);
+  background-color: var(--gc-surface-soft);
+  border: 1px solid transparent;
+  border-radius: var(--gc-radius-sm);
+  outline: none;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.editor-form__input::placeholder {
+  color: var(--gc-ink);
+  opacity: 0.2;
+}
+
+.editor-form__input:focus {
+  border-color: var(--gc-hairline);
+  background-color: var(--gc-canvas);
+}
+
+/* Textarea */
+.editor-form__textarea {
+  resize: vertical;
+  min-height: 48px;
+}
+
+/* Select */
+.editor-form__select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%23000' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 28px;
+}
+
+/* ENUM — compact pills */
+.editor-form__enum {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.editor-form__enum-tag {
+  padding: 3px 10px;
+  font-family: var(--gc-font-sans);
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: var(--gc-radius-pill);
+  background-color: var(--gc-surface-soft);
+  color: var(--gc-ink);
+  transition: background-color 0.15s ease, color 0.15s ease;
+  min-height: 26px;
+}
+
+.editor-form__enum-tag:hover {
+  opacity: 0.75;
+}
+
+.editor-form__enum-tag.is-selected {
+  background-color: var(--gc-primary);
+  color: var(--gc-on-primary);
+}
+
+/* ARRAY */
+.editor-form__array {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.editor-form__array-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.editor-form__array-input {
+  flex: 1;
+}
+
+.editor-form__array-remove {
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--gc-radius-full);
+  color: var(--gc-ink);
+  opacity: 0.2;
+  transition: opacity 0.15s ease, color 0.15s ease;
+  flex-shrink: 0;
+}
+
+.editor-form__array-remove:hover {
+  opacity: 0.6;
+  color: var(--gc-accent-magenta);
+}
+
+.editor-form__array-add {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--gc-ink);
+  opacity: 0.4;
+  padding: 2px 0;
+  transition: opacity 0.15s ease;
+}
+
+.editor-form__array-add:hover {
+  opacity: 0.8;
+}
+
+/* COLOR */
+.editor-form__color {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.editor-form__color-picker {
+  width: 28px;
+  height: 28px;
+  padding: 2px;
+  border: 1px solid var(--gc-hairline);
+  border-radius: var(--gc-radius-sm);
+  background-color: var(--gc-canvas);
+  cursor: pointer;
+}
+
+.editor-form__color-value {
+  font-family: var(--gc-font-mono);
+  font-size: 10px;
+  color: var(--gc-ink);
+  opacity: 0.35;
+}
+
+/* IMAGE hint */
+.editor-form__image-hint {
+  font-size: 12px;
+  color: var(--gc-ink);
+  opacity: 0.35;
+}
+
+/* Error */
+.editor-form__error {
+  font-size: 11px;
+  color: var(--gc-accent-magenta);
+  margin-top: 1px;
+}
+</style>

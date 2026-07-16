@@ -1,1 +1,81 @@
 @import 'tailwindcss';
+@import './styles/tokens.css';
+
+/* ============================================================
+ * Global Reset & Base Styles
+ * Based on DESIGN-figma.md:
+ * - Canvas white background
+ * - Ink black text by default
+ * - figmaSans (Inter) as primary typeface
+ * - No mid-gray text — hierarchy via weight, not opacity
+ * ============================================================ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: var(--gc-font-sans);
+  font-size: var(--gc-body-size);
+  font-weight: var(--gc-body-weight);
+  line-height: var(--gc-body-line);
+  letter-spacing: var(--gc-body-tracking);
+  color: var(--gc-ink);
+  background-color: var(--gc-canvas);
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  margin: 0;
+  font-weight: inherit;
+  font-size: inherit;
+}
+
+p {
+  margin: 0;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+  padding: 0;
+}
+
+input, textarea, select {
+  font-family: inherit;
+  font-size: inherit;
+}
+
+/* Focus ring — consistent across the app */
+:focus-visible {
+  outline: 2px solid var(--gc-primary);
+  outline-offset: 2px;
+}
+
+/* Selection */
+::selection {
+  background-color: var(--gc-primary);
+  color: var(--gc-on-primary);
+}
