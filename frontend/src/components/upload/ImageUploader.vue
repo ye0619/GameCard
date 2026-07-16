@@ -1,22 +1,25 @@
 <script setup lang="ts">
 /**
- * ImageUploader — drag-and-drop image upload.
+ * ImageUploader — drag-and-drop image upload with edit integration.
  *
- * Handles image picking and preview. Stores result in cardStore.uploadedImage.
- * UI uses design tokens per DESIGN-figma.md.
+ * Handles image picking, preview, and provides an edit entry point.
+ * Image editor panel appears inline when user clicks "Edit".
  */
 import { ref } from 'vue'
 import { useCardStore } from '@/stores/card'
+import ImageEditor from '@/components/image/ImageEditor.vue'
 
 const store = useCardStore()
 
 const isDragging = ref(false)
 const fileInput = ref<HTMLInputElement>()
+const showEditor = ref(false)
 
 function handleFile(file: File) {
   if (!file.type.startsWith('image/')) return
   const url = URL.createObjectURL(file)
   store.setImage(url)
+  showEditor.value = true
 }
 
 function onPick() {
@@ -51,6 +54,11 @@ function removeImage() {
     URL.revokeObjectURL(store.uploadedImage)
   }
   store.setImage(null)
+  showEditor.value = false
+}
+
+function closeEditor() {
+  showEditor.value = false
 }
 </script>
 
@@ -58,28 +66,46 @@ function removeImage() {
   <div class="img-upload">
     <p class="img-upload__label">上传图片</p>
 
-    <!-- Preview -->
+    <!-- Preview with actions -->
     <div v-if="store.uploadedImage" class="img-upload__preview">
       <img
         :src="store.uploadedImage"
         alt="预览"
         class="img-upload__preview-img"
       />
-      <button
-        class="img-upload__remove"
-        title="移除图片"
-        @click="removeImage"
-      >
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <line x1="18" y1="6" x2="6" y2="18" />
-          <line x1="6" y1="6" x2="18" y2="18" />
-        </svg>
-      </button>
+      <div class="img-upload__actions">
+        <button
+          class="img-upload__action-btn"
+          title="编辑图片"
+          @click="showEditor = !showEditor"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+            <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+          </svg>
+          编辑
+        </button>
+        <button
+          class="img-upload__action-btn img-upload__action-btn--remove"
+          title="移除图片"
+          @click="removeImage"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+          移除
+        </button>
+      </div>
+    </div>
+
+    <!-- Image Editor panel (inline) -->
+    <div v-if="store.uploadedImage && showEditor" class="img-upload__editor-panel">
+      <ImageEditor @close="closeEditor" />
     </div>
 
     <!-- Drop zone -->
     <div
-      v-else
+      v-else-if="!store.uploadedImage"
       class="img-upload__zone"
       :class="{ 'is-dragging': isDragging }"
       @click="onPick"
@@ -106,12 +132,12 @@ function removeImage() {
       />
     </div>
 
-    <!-- Sync hint -->
-    <p v-if="store.uploadedImage" class="img-upload__synced">
+    <!-- Sync status -->
+    <p v-if="store.uploadedImage && store.imageConfig.applied" class="img-upload__synced">
       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
         <polyline points="20 6 9 17 4 12" />
       </svg>
-      图片已上传
+      编辑已应用
     </p>
   </div>
 </template>
@@ -147,28 +173,45 @@ function removeImage() {
   display: block;
 }
 
-.img-upload__remove {
+/* Action buttons overlay */
+.img-upload__actions {
   position: absolute;
-  top: var(--gc-space-xs);
-  right: var(--gc-space-xs);
-  width: 28px;
-  height: 28px;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  gap: 1px;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+}
+
+.img-upload__action-btn {
+  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: var(--gc-radius-full);
-  background-color: rgba(0, 0, 0, 0.6);
+  gap: 4px;
+  padding: 6px 8px;
+  font-size: 11px;
+  font-weight: 500;
   color: #fff;
-  opacity: 0;
-  transition: opacity 0.15s ease, background-color 0.15s ease;
+  transition: background-color 0.15s ease;
 }
 
-.img-upload__preview:hover .img-upload__remove {
-  opacity: 1;
+.img-upload__action-btn:hover {
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
-.img-upload__remove:hover {
-  background-color: var(--gc-accent-magenta);
+.img-upload__action-btn--remove:hover {
+  background-color: rgba(255, 61, 139, 0.3);
+}
+
+/* Editor panel */
+.img-upload__editor-panel {
+  padding: var(--gc-space-md);
+  border: 1px solid var(--gc-hairline);
+  border-radius: var(--gc-radius-md);
+  background-color: var(--gc-canvas);
 }
 
 /* Drop zone */
@@ -222,7 +265,6 @@ function removeImage() {
   opacity: 0.3;
 }
 
-/* Hidden file input */
 .img-upload__input {
   display: none;
 }
@@ -232,7 +274,6 @@ function removeImage() {
   display: flex;
   align-items: center;
   gap: var(--gc-space-xxs);
-  font-family: var(--gc-font-sans);
   font-size: 12px;
   font-weight: 480;
   color: var(--gc-semantic-success);

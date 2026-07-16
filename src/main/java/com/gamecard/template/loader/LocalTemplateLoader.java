@@ -98,7 +98,7 @@ public class LocalTemplateLoader implements TemplateLoader {
     private void loadFallback() {
         PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
         try {
-            Resource resource = resolver.getResource("classpath:templates/pokemon/template.json");
+            Resource resource = resolver.getResource("classpath:templates/pokemon-template/template.json");
             if (resource.exists()) {
                 try (InputStream is = resource.getInputStream()) {
                     Template template = reader.read(is);

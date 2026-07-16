@@ -5,20 +5,20 @@
  * Shows the rendered card centered on a design-tool-style canvas
  * with dot-grid background, shadow, and appropriate whitespace.
  *
- * All rendering logic stays in card/* components (frozen core).
+ * All rendering logic stays in pokemon-card/ components (frozen core).
  */
 import { computed } from 'vue'
 import { useCardStore } from '@/stores/card'
 import { resolveTheme } from '@/utils/themeResolver'
 import EmptyState from '@/components/common/EmptyState.vue'
 
-import CardContainer from '@/components/card/CardContainer.vue'
-import CardBackground from '@/components/card/CardBackground.vue'
-import CardHeader from '@/components/card/CardHeader.vue'
-import CardImage from '@/components/card/CardImage.vue'
-import CardStats from '@/components/card/CardStats.vue'
-import CardSkills from '@/components/card/CardSkills.vue'
-import CardDescription from '@/components/card/CardDescription.vue'
+import PokemonCardContainer from '@/components/pokemon-card/PokemonCardContainer.vue'
+import PokemonCardBackground from '@/components/pokemon-card/PokemonCardBackground.vue'
+import PokemonCardHeader from '@/components/pokemon-card/PokemonCardHeader.vue'
+import PokemonCardImage from '@/components/pokemon-card/PokemonCardImage.vue'
+import PokemonCardStats from '@/components/pokemon-card/PokemonCardStats.vue'
+import PokemonCardSkills from '@/components/pokemon-card/PokemonCardSkills.vue'
+import PokemonCardDescription from '@/components/pokemon-card/PokemonCardDescription.vue'
 
 const store = useCardStore()
 
@@ -32,7 +32,7 @@ const hasData = computed(() => {
 
 const statValues = computed(() => {
   const data = store.cardData
-  const statKeys = ['hp', 'attack', 'defense', 'spatk', 'spdef', 'speed']
+  const statKeys = ['wisdom', 'constitution', 'perception', 'luck', 'charm', 'strength']
   const stats: Record<string, number> = {}
   for (const key of statKeys) {
     const val = data[key]
@@ -49,6 +49,35 @@ const skills = computed(() => store.cardData['skills'] ?? '')
 const description = computed(() => store.cardData['description'] ?? '')
 const image = computed(() => store.uploadedImage)
 const templateName = computed(() => store.selectedTemplate?.name ?? '')
+
+/** Shape mask + crop style from imageConfig */
+const imageShapeStyle = computed(() => {
+  const cfg = store.imageConfig
+  if (!cfg.applied) return {}
+  const s: Record<string, string> = { overflow: 'hidden' }
+
+  // Crop via clip-path inset
+  if (cfg.crop) {
+    const t = cfg.crop.y
+    const r = 1 - cfg.crop.x - cfg.crop.width
+    const b = 1 - cfg.crop.y - cfg.crop.height
+    const l = cfg.crop.x
+    s['clipPath'] = `inset(${t * 100}% ${r * 100}% ${b * 100}% ${l * 100}%)`
+  }
+
+  // Shape mask (only if no crop, since clip-path can't stack)
+  if (!cfg.crop) {
+    if (cfg.shape === 'circle') {
+      s['clipPath'] = 'circle(50%)'
+    } else if (cfg.shape === 'rectangle') {
+      s['borderRadius'] = '0'
+    } else {
+      s['borderRadius'] = '12px'
+    }
+  }
+
+  return s
+})
 </script>
 
 <template>
@@ -77,13 +106,13 @@ const templateName = computed(() => store.selectedTemplate?.name ?? '')
       <!-- Card with shadow -->
       <div class="canvas-card-wrapper">
         <div class="canvas-card">
-          <CardContainer :theme="theme">
-            <CardBackground
+          <PokemonCardContainer :theme="theme">
+            <PokemonCardBackground
               :theme="theme"
               :template="store.selectedTemplate"
             />
             <div class="preview-content">
-              <CardHeader
+              <PokemonCardHeader
                 :name="name"
                 :type="type"
                 :theme="theme"
@@ -91,19 +120,21 @@ const templateName = computed(() => store.selectedTemplate?.name ?? '')
                 :level="level"
                 :cp="cp"
               />
-              <CardImage
-                :image="image"
-                :name="name"
-              />
-              <CardStats
+              <div :style="imageShapeStyle">
+                <PokemonCardImage
+                  :image="image"
+                  :name="name"
+                />
+              </div>
+              <PokemonCardStats
                 :theme="theme"
                 :stats="statValues"
               />
-              <CardSkills
+              <PokemonCardSkills
                 :theme="theme"
                 :skills="skills"
               />
-              <CardDescription
+              <PokemonCardDescription
                 :description="description"
                 :theme="theme"
               />
@@ -112,7 +143,7 @@ const templateName = computed(() => store.selectedTemplate?.name ?? '')
                 <span>{{ templateName }}</span>
               </div>
             </div>
-          </CardContainer>
+          </PokemonCardContainer>
         </div>
       </div>
 

@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import type { Template, CardData } from '@/types'
+import type { Template, CardData, ImageConfig } from '@/types'
 import { fetchTemplates, fetchTemplate } from '@/api/template'
 
 /** 卡片编辑器的全局状态 */
@@ -15,6 +15,26 @@ export const useCardStore = defineStore('card', () => {
   // ── 卡片数据 ──
   const cardData = ref<CardData>({})
   const uploadedImage = ref<string | null>(null)
+
+  // ── 图片编辑配置 ──
+  const imageConfig = ref<ImageConfig>({
+    shape: 'rounded',
+    scale: 1,
+    position: { x: 0, y: 0 },
+    crop: null,
+    applied: false,
+  })
+
+  /** 重置图片配置 */
+  function resetImageConfig() {
+    imageConfig.value = {
+      shape: 'rounded',
+      scale: 1,
+      position: { x: 0, y: 0 },
+      crop: null,
+      applied: false,
+    }
+  }
 
   // ── 加载状态 ──
   const loading = ref(false)
@@ -55,9 +75,10 @@ export const useCardStore = defineStore('card', () => {
     cardData.value[key] = value
   }
 
-  /** 设置上传的图片 */
+  /** 设置上传的图片，同时重置图片配置 */
   function setImage(url: string | null) {
     uploadedImage.value = url
+    resetImageConfig()
   }
 
   return {
@@ -66,10 +87,12 @@ export const useCardStore = defineStore('card', () => {
     selectedTemplate,
     cardData,
     uploadedImage,
+    imageConfig,
     loading,
     loadTemplates,
     selectTemplate,
     updateField,
     setImage,
+    resetImageConfig,
   }
 })

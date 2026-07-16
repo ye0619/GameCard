@@ -99,3 +99,30 @@ export interface ApiResult<T> {
   message: string
   data: T
 }
+
+// ===================== 图片编辑配置 =====================
+
+/** 图片显示形状 */
+export type ImageShape = 'rectangle' | 'circle' | 'rounded'
+
+/** 裁剪区域（归一化坐标 0~1，相对于图片原始尺寸） */
+export interface CropRegion {
+  x: number
+  y: number
+  width: number
+  height: number
+}
+
+/** 图片编辑配置 */
+export interface ImageConfig {
+  /** 显示形状 */
+  shape: ImageShape
+  /** 缩放比例 (0.5 ~ 3.0, 1.0 = 100%) */
+  scale: number
+  /** 图片在容器中的偏移位置 */
+  position: { x: number; y: number }
+  /** 裁剪区域（null 表示不裁剪） */
+  crop: CropRegion | null
+  /** 是否已应用编辑 */
+  applied: boolean
+}
