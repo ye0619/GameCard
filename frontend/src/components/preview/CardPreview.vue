@@ -46,6 +46,11 @@ const dragStart = ref({ x: 0, y: 0 })
 const dragOrigin = ref({ x: 0, y: 0 })
 const cardEl = ref<HTMLElement | null>(null)
 
+/** 卡片 DOM 元素（供导出模块使用） */
+const cardDomRef = ref<HTMLElement | null>(null)
+
+defineExpose({ cardElement: cardDomRef })
+
 /** 是否可以拖拽（有图片且已应用编辑配置） */
 const canDrag = computed(() => !!store.uploadedImage)
 
@@ -164,7 +169,7 @@ const imageTransform = computed((): Record<string, string> => {
         @pointerleave="onPointerUp"
         @pointercancel="onPointerUp"
       >
-        <div class="canvas-card">
+        <div ref="cardDomRef" class="canvas-card">
           <CardRenderer
             :template="store.selectedTemplate"
             :card-data="store.cardData"

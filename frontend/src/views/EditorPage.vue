@@ -9,14 +9,17 @@
  *
  * Full viewport height, each panel scrolls independently.
  */
-import { onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useCardStore } from '@/stores/card'
 import ImageUploader from '@/components/upload/ImageUploader.vue'
 import TemplateSelector from '@/components/template/TemplateSelector.vue'
 import CardEditor from '@/components/editor/CardEditor.vue'
 import CardPreview from '@/components/preview/CardPreview.vue'
+import ExportButton from '@/components/export/ExportButton.vue'
 
 const store = useCardStore()
+
+const cardPreviewRef = ref<InstanceType<typeof CardPreview> | null>(null)
 
 onMounted(() => {
   if (store.templates.length === 0) {
@@ -38,13 +41,16 @@ onMounted(() => {
 
     <!-- ======== Center: Preview Canvas ======== -->
     <main class="editor-canvas">
-      <CardPreview />
+      <CardPreview ref="cardPreviewRef" />
     </main>
 
     <!-- ======== Right Panel: Properties ======== -->
     <aside class="editor-panel editor-panel--right">
       <div class="editor-panel__header">
         <p class="editor-panel__title">属性</p>
+        <ExportButton
+          :card-element="cardPreviewRef?.cardElement ?? null"
+        />
       </div>
       <div class="editor-panel__inner">
         <CardEditor />
@@ -90,6 +96,9 @@ onMounted(() => {
   padding: var(--gc-space-sm) var(--gc-space-md);
   border-bottom: 1px solid var(--gc-hairline-soft);
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--gc-space-sm);
 }
 
 .editor-panel__title {
@@ -99,6 +108,7 @@ onMounted(() => {
   letter-spacing: var(--gc-caption-tracking);
   text-transform: uppercase;
   color: var(--gc-ink);
+  flex-shrink: 0;
 }
 
 .editor-panel__inner {
