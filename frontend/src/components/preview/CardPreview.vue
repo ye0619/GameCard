@@ -5,15 +5,21 @@
  * Shows the rendered card centered on a design-tool-style canvas
  * with dot-grid background, shadow, and appropriate whitespace.
  *
+ * Supports direct image drag-to-move on the card:
+ * - When an image is present and imageConfig is applied, user can
+ *   drag the image directly on the card to reposition it.
+ * - Cursor changes to grab/grabbing for visual feedback.
+ *
  * Canvas-level concerns only:
  * - Empty state
  * - Zoom badge
  * - Card wrapper with shadow
  * - Image shape/crop styling (canvas-level editing)
+ * - Direct image drag (position update)
  *
  * All card rendering is delegated to CardRenderer.
  */
-import { computed } from 'vue'
+import { ref, computed } from 'vue'
 import { useCardStore } from '@/stores/card'
 import { resolveTheme } from '@/utils/themeResolver'
 import EmptyState from '@/components/common/EmptyState.vue'
@@ -30,6 +36,57 @@ const hasData = computed(() => {
 })
 
 const image = computed(() => store.uploadedImage)
+
+// ══════════════════════════════════════════════════
+// 直接拖拽移动（在卡片预览上拖拽图片）
+// ══════════════════════════════════════════════════
+
+const isDragging = ref(false)
+const dragStart = ref({ x: 0, y: 0 })
+const dragOrigin = ref({ x: 0, y: 0 })
+const cardEl = ref<HTMLElement | null>(null)
+
+/** 是否可以拖拽（有图片且已应用编辑配置） */
+const canDrag = computed(() => !!store.uploadedImage)
+
+function onPointerDown(e: PointerEvent) {
+  if (!canDrag.value) return
+  // 忽略非左键点击
+  if (e.button !== 0) return
+
+  isDragging.value = true
+  const pos = store.imageConfig.position
+  dragStart.value = { x: e.clientX, y: e.clientY }
+  dragOrigin.value = { x: pos.x, y: pos.y }
+
+  // 确保 imageConfig 已启用，使变换生效
+  if (!store.imageConfig.applied) {
+    store.imageConfig.applied = true
+  }
+
+  if (cardEl.value) {
+    cardEl.value.setPointerCapture(e.pointerId)
+  }
+}
+
+function onPointerMove(e: PointerEvent) {
+  if (!isDragging.value) return
+
+  const dx = e.clientX - dragStart.value.x
+  const dy = e.clientY - dragStart.value.y
+
+  store.imageConfig = {
+    ...store.imageConfig,
+    position: {
+      x: dragOrigin.value.x + dx,
+      y: dragOrigin.value.y + dy,
+    },
+  }
+}
+
+function onPointerUp() {
+  isDragging.value = false
+}
 
 /** Shape mask + crop style from imageConfig */
 const imageShapeStyle = computed(() => {
@@ -96,8 +153,17 @@ const imageTransform = computed((): Record<string, string> => {
       <!-- Zoom indicator (reserved for future zoom control) -->
       <div class="canvas-zoom-badge">100%</div>
 
-      <!-- Card with shadow -->
-      <div class="canvas-card-wrapper">
+      <!-- Card with shadow — image drag-to-move handlers -->
+      <div
+        ref="cardEl"
+        class="canvas-card-wrapper"
+        :class="{ 'is-dragging': isDragging, 'has-image': !!store.uploadedImage }"
+        @pointerdown="onPointerDown"
+        @pointermove="onPointerMove"
+        @pointerup="onPointerUp"
+        @pointerleave="onPointerUp"
+        @pointercancel="onPointerUp"
+      >
         <div class="canvas-card">
           <CardRenderer
             :template="store.selectedTemplate"
@@ -167,11 +233,22 @@ const imageTransform = computed((): Record<string, string> => {
 }
 
 /* =============================================
-   Card wrapper — shadow + hover lift
+   Card wrapper — shadow + hover lift + drag
    ============================================= */
 .canvas-card-wrapper {
   display: flex;
   justify-content: center;
+  touch-action: none;
+  user-select: none;
+}
+
+/* 有图片时显示拖拽光标 */
+.canvas-card-wrapper.has-image {
+  cursor: grab;
+}
+
+.canvas-card-wrapper.is-dragging {
+  cursor: grabbing;
 }
 
 .canvas-card {

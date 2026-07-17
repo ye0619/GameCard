@@ -18,7 +18,7 @@ const showEditor = ref(false)
 function handleFile(file: File) {
   if (!file.type.startsWith('image/')) return
   const url = URL.createObjectURL(file)
-  store.setImage(url)
+  store.setImage(url, file)
   showEditor.value = true
 }
 

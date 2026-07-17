@@ -16,6 +16,9 @@ export const useCardStore = defineStore('card', () => {
   const cardData = ref<CardData>({})
   const uploadedImage = ref<string | null>(null)
 
+  /** 原始上传的 File 对象（用于抠图等需要上传原始文件的操作） */
+  const originalFile = ref<File | null>(null)
+
   // ── 图片编辑配置 ──
   const imageConfig = ref<ImageConfig>({
     shape: 'rounded',
@@ -76,8 +79,11 @@ export const useCardStore = defineStore('card', () => {
   }
 
   /** 设置上传的图片，同时重置图片配置 */
-  function setImage(url: string | null) {
+  function setImage(url: string | null, file?: File | null) {
     uploadedImage.value = url
+    if (file !== undefined) {
+      originalFile.value = file
+    }
     resetImageConfig()
   }
 
@@ -87,6 +93,7 @@ export const useCardStore = defineStore('card', () => {
     selectedTemplate,
     cardData,
     uploadedImage,
+    originalFile,
     imageConfig,
     loading,
     loadTemplates,

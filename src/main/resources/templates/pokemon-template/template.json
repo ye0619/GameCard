@@ -218,7 +218,7 @@
       "label": "名称",
       "type": "TEXT",
       "required": true,
-      "placeholder": "如：超级无敌暴龙"
+      "placeholder": "如：无敌暴龙战士"
     },
     {
       "key": "nature",

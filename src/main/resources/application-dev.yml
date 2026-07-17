@@ -29,6 +29,14 @@ mybatis-plus:
       logic-delete-value: 1
       logic-not-delete-value: 0
 
+# ============================================================
+# 自动抠图服务配置
+# ============================================================
+bg-remover:
+  enabled: true
+  service-url: http://localhost:8001
+  timeout-ms: 120000
+
 # 日志配置
 logging:
   level:

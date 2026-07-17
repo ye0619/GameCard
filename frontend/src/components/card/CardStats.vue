@@ -30,8 +30,8 @@ const hasStats = computed(() =>
 /** 六边形雷达图的多边形点坐标（6 边形） */
 function hexPoints(cx: number, cy: number, r: number, values: number[]): string {
   if (values.length < 6) return ''
-  // 标准化值到 [0, 1]，最大 255
-  const normalized = values.map(v => Math.min(v / 255, 1))
+  // 标准化值到 [0, 1]，最大 100
+  const normalized = values.map(v => Math.min(v / 100, 1))
   return normalized
     .map((v, i) => {
       const angle = (Math.PI / 3) * i - Math.PI / 2
@@ -76,7 +76,7 @@ const displayFields = computed(() => props.statFields.slice(0, 6))
           <div
             class="h-full rounded-full transition-all duration-500"
             :style="{
-              width: Math.min((stats[field.key] ?? 0) / 255 * 100, 100) + '%',
+              width: Math.min((stats[field.key] ?? 0), 100) + '%',
               backgroundColor: theme.color,
             }"
           />

@@ -15,6 +15,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useCardStore } from '@/stores/card'
 import type { ImageShape, CropRegion } from '@/types'
 import ShapeSelector from './ShapeSelector.vue'
+import BackgroundRemover from './BackgroundRemover.vue'
 
 const store = useCardStore()
 const emit = defineEmits<{ close: [] }>()
@@ -51,6 +52,22 @@ onMounted(() => {
     localCrop.value = { x: 0, y: 0, width: 1, height: 1 }
   }
 })
+
+// ── Background removal ──
+
+const imageFile = computed(() => store.originalFile)
+
+function onBgRemoved(dataUri: string) {
+  // 用抠图后的透明 PNG 替换当前预览图片
+  store.setImage(dataUri)
+  // 重置图片编辑状态
+  localScale.value = 1
+  localPosX.value = 0
+  localPosY.value = 0
+  localCrop.value = { x: 0, y: 0, width: 1, height: 1 }
+  localShape.value = 'rounded'
+  editMode.value = 'pan'
+}
 
 // ── Preview container bounding rect ──
 function getPreviewRect() {
@@ -332,6 +349,13 @@ function cancel() {
     <!-- Controls -->
     <div class="img-editor__controls">
       <ShapeSelector v-model="localShape" />
+
+      <!-- 自动去背景 -->
+      <BackgroundRemover
+        :image-file="imageFile"
+        @done="onBgRemoved"
+      />
+
       <div v-if="editMode === 'pan'" class="img-editor__slider-group">
         <label class="img-editor__slider-label">
           缩放 <span class="img-editor__slider-value">{{ Math.round(localScale * 100) }}%</span>
