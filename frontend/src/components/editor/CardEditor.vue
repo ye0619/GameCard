@@ -10,10 +10,13 @@ import { computed, ref, watch } from 'vue'
 import { useCardStore } from '@/stores/card'
 import type { TemplateField } from '@/types'
 import EmptyState from '@/components/common/EmptyState.vue'
+import PresetSkillSelector from './PresetSkillSelector.vue'
+import PresetIntroSelector from './PresetIntroSelector.vue'
 
 const store = useCardStore()
 
 const fields = computed(() => store.selectedTemplate?.fields ?? [])
+const selectedTemplate = computed(() => store.selectedTemplate)
 
 function parseOptions(raw: string | null): string[] {
   if (!raw) return []
@@ -73,6 +76,35 @@ function syncArrayToCard(field: TemplateField): void {
 watch(() => store.selectedTemplateId, () => {
   arrayEntries.value = {}
 })
+
+// Sync cardData → arrayEntries for ARRAY fields
+// Handles preset skill additions that bypass addArrayItem
+watch(
+  () => {
+    const arrFields = fields.value.filter(f => f.type === 'ARRAY')
+    return arrFields.map(f => ({ key: f.key, val: store.cardData[f.key] }))
+  },
+  (entries) => {
+    for (const { key, val } of entries) {
+      if (!val || typeof val !== 'string') continue
+      try {
+        const parsed = JSON.parse(val)
+        if (Array.isArray(parsed)) {
+          const names = parsed.map((item: unknown) =>
+            typeof item === 'string' ? item : String((item as Record<string, unknown>).name ?? ''),
+          ).filter(Boolean)
+          const current = arrayEntries.value[key] ?? []
+          const changed = names.length !== current.length ||
+            names.some((n, i) => n !== current[i])
+          if (changed) {
+            arrayEntries.value[key] = names
+          }
+        }
+      } catch { /* ignore parse errors from intermediate states */ }
+    }
+  },
+  { deep: true },
+)
 </script>
 
 <template>
@@ -112,6 +144,12 @@ watch(() => store.selectedTemplateId, () => {
           :placeholder="field.placeholder ?? ''"
           rows="2"
           class="editor-form__input editor-form__textarea"
+        />
+        <!-- Preset introduction selector (for description fields) -->
+        <PresetIntroSelector
+          v-if="field.type === 'TEXTAREA' && field.key === 'description' && selectedTemplate?.presetIntroductions && selectedTemplate.presetIntroductions.length > 0"
+          :field-key="field.key"
+          :presets="selectedTemplate.presetIntroductions"
         />
 
         <!-- NUMBER -->
@@ -153,6 +191,13 @@ watch(() => store.selectedTemplateId, () => {
 
         <!-- ARRAY -->
         <div v-else-if="field.type === 'ARRAY'" class="editor-form__array">
+          <!-- Preset skill selector (only for skills-type arrays) -->
+          <PresetSkillSelector
+            v-if="selectedTemplate?.presetSkills && selectedTemplate.presetSkills.length > 0"
+            :field-key="field.key"
+            :presets="selectedTemplate.presetSkills"
+          />
+
           <div
             v-for="(item, idx) in getArray(field)"
             :key="idx"

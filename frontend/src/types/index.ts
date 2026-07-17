@@ -85,6 +85,37 @@ export interface Template {
   assets: TemplateAssets | null
   /** 模板元数据 */
   metadata: TemplateMetadata
+
+  /** 预设技能列表（快捷选择） */
+  presetSkills?: PresetSkill[] | null
+  /** 预设角色简介列表（快捷选择） */
+  presetIntroductions?: PresetIntroduction[] | null
+}
+
+// ===================== 预设技能 =====================
+
+/** 预设技能定义 */
+export interface PresetSkill {
+  /** 技能名称 */
+  name: string
+  /** 技能分类（如 "攻击", "防御", "辅助", "特殊"） */
+  category?: string
+  /** 技能描述 */
+  description?: string
+  /** 威力等级（1-100） */
+  power?: number
+}
+
+// ===================== 预设简介 =====================
+
+/** 预设角色简介 */
+export interface PresetIntroduction {
+  /** 预设标题 */
+  title: string
+  /** 简介/背景故事内容 */
+  content: string
+  /** 建议的性格搭配 */
+  natureHint?: string
 }
 
 // ===================== 卡片数据 =====================

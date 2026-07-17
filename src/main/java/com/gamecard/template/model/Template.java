@@ -82,4 +82,10 @@ public class Template {
     /** Template metadata */
     private TemplateMetadata metadata;
 
+    /** Preset skills for quick selection (loaded from template.json) */
+    private List<PresetSkill> presetSkills;
+
+    /** Preset character introductions for quick selection (loaded from template.json) */
+    private List<PresetIntroduction> presetIntroductions;
+
 }
