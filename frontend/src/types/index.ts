@@ -76,8 +76,11 @@ export interface Template {
   fields: TemplateField[]
   /** 主题映射表：字段值 → 主题配置 */
   themeMapping: Record<string, ThemeMappingItem> | null
-  /** 主题映射来源字段（如 "type"） */
+  /** 主题映射来源字段（如 "nature"） */
   themeField: string | null
+
+  /** 属性统计字段列表（用于雷达图/数值条展示） */
+  statFields: string[] | null
   /** 模板资源 */
   assets: TemplateAssets | null
   /** 模板元数据 */

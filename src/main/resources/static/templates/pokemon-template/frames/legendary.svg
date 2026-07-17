@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 380 520">
+  <defs>
+    <linearGradient id="legendary-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F59E0B"/>
+      <stop offset="50%" stop-color="#FCD34D"/>
+      <stop offset="100%" stop-color="#F59E0B"/>
+    </linearGradient>
+  </defs>
+  <rect x="2" y="2" width="376" height="516" rx="12" fill="none" stroke="url(#legendary-grad)" stroke-width="3"/>
+  <rect x="6" y="6" width="368" height="508" rx="10" fill="none" stroke="url(#legendary-grad)" stroke-width="1" stroke-dasharray="4 4"/>
+  <path d="M190,0 L195,15 L190,12 L185,15 Z" fill="#F59E0B"/>
+  <path d="M190,520 L195,505 L190,508 L185,505 Z" fill="#F59E0B"/>
+  <path d="M0,260 L15,265 L12,260 L15,255 Z" fill="#F59E0B"/>
+  <path d="M380,260 L365,265 L368,260 L365,255 Z" fill="#F59E0B"/>
+</svg>

@@ -1,0 +1,336 @@
+/* ============================================================
+ * GameCard Design Tokens
+ * Based on DESIGN-figma.md — Figma's black-and-white editorial
+ * frame with oversized pastel color-block sections.
+ *
+ * Font substitutes (per spec):
+ *   figmaSans → Inter (variable)
+ *   figmaMono → JetBrains Mono
+ * ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,320;14..32,330;14..32,340;14..32,400;14..32,450;14..32,480;14..32,500;14..32,540;14..32,600;14..32,700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+  /* ========================================
+   * 1. COLORS
+   * ======================================== */
+
+  /* Brand & Core */
+  --gc-primary: #000000;
+  --gc-on-primary: #ffffff;
+  --gc-ink: #000000;
+  --gc-canvas: #ffffff;
+  --gc-inverse-canvas: #000000;
+  --gc-inverse-ink: #ffffff;
+  --gc-on-inverse-soft: rgba(255, 255, 255, 0.16);
+
+  /* Surface */
+  --gc-surface-soft: #f7f7f5;
+  --gc-hairline: #e6e6e6;
+  --gc-hairline-soft: #f1f1f1;
+
+  /* Color Blocks (pastel story sections) */
+  --gc-block-lime: #dceeb1;
+  --gc-block-lilac: #c5b0f4;
+  --gc-block-cream: #f4ecd6;
+  --gc-block-pink: #efd4d4;
+  --gc-block-mint: #c8e6cd;
+  --gc-block-coral: #f3c9b6;
+  --gc-block-navy: #1f1d3d;
+
+  /* Accent */
+  --gc-accent-magenta: #ff3d8b;
+  --gc-semantic-success: #1ea64a;
+  --gc-overlay-scrim: rgba(0, 0, 0, 0.6);
+
+  /* ========================================
+   * 2. TYPOGRAPHY — figmaSans → Inter
+   * ======================================== */
+
+  --gc-font-sans: 'Inter', 'SF Pro Display', system-ui, -apple-system, sans-serif;
+  --gc-font-mono: 'JetBrains Mono', 'SF Mono', 'Menlo', monospace;
+
+  /* Font feature: kern enabled globally */
+  font-variant-ligatures: no-contextual;
+
+  /* Display */
+  --gc-display-xl-size: 86px;
+  --gc-display-xl-weight: 340;
+  --gc-display-xl-line: 1.00;
+  --gc-display-xl-tracking: -1.72px;
+
+  --gc-display-lg-size: 64px;
+  --gc-display-lg-weight: 340;
+  --gc-display-lg-line: 1.10;
+  --gc-display-lg-tracking: -0.96px;
+
+  /* Headline & Subhead */
+  --gc-headline-size: 26px;
+  --gc-headline-weight: 540;
+  --gc-headline-line: 1.35;
+  --gc-headline-tracking: -0.26px;
+
+  --gc-subhead-size: 26px;
+  --gc-subhead-weight: 340;
+  --gc-subhead-line: 1.35;
+  --gc-subhead-tracking: -0.26px;
+
+  /* Card Title */
+  --gc-card-title-size: 24px;
+  --gc-card-title-weight: 700;
+  --gc-card-title-line: 1.45;
+  --gc-card-title-tracking: 0;
+
+  /* Body */
+  --gc-body-lg-size: 20px;
+  --gc-body-lg-weight: 330;
+  --gc-body-lg-line: 1.40;
+  --gc-body-lg-tracking: -0.14px;
+
+  --gc-body-size: 18px;
+  --gc-body-weight: 320;
+  --gc-body-line: 1.45;
+  --gc-body-tracking: -0.26px;
+
+  --gc-body-sm-size: 16px;
+  --gc-body-sm-weight: 330;
+  --gc-body-sm-line: 1.45;
+  --gc-body-sm-tracking: -0.14px;
+
+  /* Button & Link */
+  --gc-button-size: 20px;
+  --gc-button-weight: 480;
+  --gc-button-line: 1.40;
+  --gc-button-tracking: -0.10px;
+
+  --gc-link-size: 20px;
+  --gc-link-weight: 480;
+  --gc-link-line: 1.40;
+  --gc-link-tracking: -0.10px;
+
+  /* Eyebrow (mono, uppercase) */
+  --gc-eyebrow-size: 18px;
+  --gc-eyebrow-weight: 400;
+  --gc-eyebrow-line: 1.30;
+  --gc-eyebrow-tracking: 0.54px;
+
+  /* Caption (mono, uppercase) */
+  --gc-caption-size: 12px;
+  --gc-caption-weight: 400;
+  --gc-caption-line: 1.00;
+  --gc-caption-tracking: 0.60px;
+
+  /* ========================================
+   * 3. SPACING (8px base unit)
+   * ======================================== */
+
+  --gc-space-hair: 1px;
+  --gc-space-xxs: 4px;
+  --gc-space-xs: 8px;
+  --gc-space-sm: 12px;
+  --gc-space-md: 16px;
+  --gc-space-lg: 24px;
+  --gc-space-xl: 32px;
+  --gc-space-xxl: 48px;
+  --gc-space-section: 96px;
+
+  /* ========================================
+   * 4. BORDER RADIUS
+   * ======================================== */
+
+  --gc-radius-xs: 2px;
+  --gc-radius-sm: 6px;
+  --gc-radius-md: 8px;
+  --gc-radius-lg: 24px;
+  --gc-radius-xl: 32px;
+  --gc-radius-pill: 50px;
+  --gc-radius-full: 9999px;
+
+  /* ========================================
+   * 5. SHADOWS / ELEVATION
+   * ======================================== */
+
+  --gc-elevation-flat: none;
+  --gc-elevation-hairline: 0 0 0 1px var(--gc-hairline);
+  --gc-elevation-soft: 0 4px 16px rgba(0, 0, 0, 0.06);
+  --gc-elevation-modal: 0 16px 48px rgba(0, 0, 0, 0.16);
+
+  /* ========================================
+   * 6. CONTAINER
+   * ======================================== */
+
+  --gc-max-width: 1280px;
+  --gc-nav-height: 56px;
+}
+
+/* ============================================================
+ * UTILITY CLASSES — Typography
+ * ============================================================ */
+
+.gc-display-xl {
+  font-family: var(--gc-font-sans);
+  font-size: var(--gc-display-xl-size);
+  font-weight: var(--gc-display-xl-weight);
+  line-height: var(--gc-display-xl-line);
+  letter-spacing: var(--gc-display-xl-tracking);
+}
+
+.gc-display-lg {
+  font-family: var(--gc-font-sans);
+  font-size: var(--gc-display-lg-size);
+  font-weight: var(--gc-display-lg-weight);
+  line-height: var(--gc-display-lg-line);
+  letter-spacing: var(--gc-display-lg-tracking);
+}
+
+.gc-headline {
+  font-family: var(--gc-font-sans);
+  font-size: var(--gc-headline-size);
+  font-weight: var(--gc-headline-weight);
+  line-height: var(--gc-headline-line);
+  letter-spacing: var(--gc-headline-tracking);
+}
+
+.gc-subhead {
+  font-family: var(--gc-font-sans);
+  font-size: var(--gc-subhead-size);
+  font-weight: var(--gc-subhead-weight);
+  line-height: var(--gc-subhead-line);
+  letter-spacing: var(--gc-subhead-tracking);
+}
+
+.gc-card-title {
+  font-family: var(--gc-font-sans);
+  font-size: var(--gc-card-title-size);
+  font-weight: var(--gc-card-title-weight);
+  line-height: var(--gc-card-title-line);
+  letter-spacing: var(--gc-card-title-tracking);
+}
+
+.gc-body {
+  font-family: var(--gc-font-sans);
+  font-size: var(--gc-body-size);
+  font-weight: var(--gc-body-weight);
+  line-height: var(--gc-body-line);
+  letter-spacing: var(--gc-body-tracking);
+}
+
+.gc-body-lg {
+  font-family: var(--gc-font-sans);
+  font-size: var(--gc-body-lg-size);
+  font-weight: var(--gc-body-lg-weight);
+  line-height: var(--gc-body-lg-line);
+  letter-spacing: var(--gc-body-lg-tracking);
+}
+
+.gc-body-sm {
+  font-family: var(--gc-font-sans);
+  font-size: var(--gc-body-sm-size);
+  font-weight: var(--gc-body-sm-weight);
+  line-height: var(--gc-body-sm-line);
+  letter-spacing: var(--gc-body-sm-tracking);
+}
+
+.gc-button {
+  font-family: var(--gc-font-sans);
+  font-size: var(--gc-button-size);
+  font-weight: var(--gc-button-weight);
+  line-height: var(--gc-button-line);
+  letter-spacing: var(--gc-button-tracking);
+}
+
+.gc-eyebrow {
+  font-family: var(--gc-font-mono);
+  font-size: var(--gc-eyebrow-size);
+  font-weight: var(--gc-eyebrow-weight);
+  line-height: var(--gc-eyebrow-line);
+  letter-spacing: var(--gc-eyebrow-tracking);
+  text-transform: uppercase;
+}
+
+.gc-caption {
+  font-family: var(--gc-font-mono);
+  font-size: var(--gc-caption-size);
+  font-weight: var(--gc-caption-weight);
+  line-height: var(--gc-caption-line);
+  letter-spacing: var(--gc-caption-tracking);
+  text-transform: uppercase;
+}
+
+/* ============================================================
+ * UTILITY CLASSES — Spacing helpers
+ * ============================================================ */
+
+.gc-container {
+  width: 100%;
+  max-width: var(--gc-max-width);
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: var(--gc-space-xxl);
+  padding-right: var(--gc-space-xxl);
+}
+
+@media (max-width: 768px) {
+  .gc-container {
+    padding-left: var(--gc-space-lg);
+    padding-right: var(--gc-space-lg);
+  }
+}
+
+/* ============================================================
+ * UTILITY CLASSES — Color Blocks
+ * ============================================================ */
+
+.gc-block {
+  border-radius: var(--gc-radius-lg);
+  padding: var(--gc-space-xxl);
+}
+
+.gc-block--lime {
+  background-color: var(--gc-block-lime);
+  color: var(--gc-ink);
+}
+
+.gc-block--lilac {
+  background-color: var(--gc-block-lilac);
+  color: var(--gc-ink);
+}
+
+.gc-block--cream {
+  background-color: var(--gc-block-cream);
+  color: var(--gc-ink);
+}
+
+.gc-block--mint {
+  background-color: var(--gc-block-mint);
+  color: var(--gc-ink);
+}
+
+.gc-block--coral {
+  background-color: var(--gc-block-coral);
+  color: var(--gc-ink);
+}
+
+.gc-block--pink {
+  background-color: var(--gc-block-pink);
+  color: var(--gc-ink);
+}
+
+.gc-block--navy {
+  background-color: var(--gc-block-navy);
+  color: var(--gc-inverse-ink);
+}
+
+/* ============================================================
+ * RESPONSIVE — Typography adjustments
+ * ============================================================ */
+
+@media (max-width: 768px) {
+  :root {
+    --gc-display-xl-size: 48px;
+    --gc-display-xl-tracking: -0.96px;
+    --gc-display-lg-size: 40px;
+    --gc-display-lg-tracking: -0.64px;
+  }
+}

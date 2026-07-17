@@ -5,20 +5,19 @@
  * Shows the rendered card centered on a design-tool-style canvas
  * with dot-grid background, shadow, and appropriate whitespace.
  *
- * All rendering logic stays in pokemon-card/ components (frozen core).
+ * Canvas-level concerns only:
+ * - Empty state
+ * - Zoom badge
+ * - Card wrapper with shadow
+ * - Image shape/crop styling (canvas-level editing)
+ *
+ * All card rendering is delegated to CardRenderer.
  */
 import { computed } from 'vue'
 import { useCardStore } from '@/stores/card'
 import { resolveTheme } from '@/utils/themeResolver'
 import EmptyState from '@/components/common/EmptyState.vue'
-
-import PokemonCardContainer from '@/components/pokemon-card/PokemonCardContainer.vue'
-import PokemonCardBackground from '@/components/pokemon-card/PokemonCardBackground.vue'
-import PokemonCardHeader from '@/components/pokemon-card/PokemonCardHeader.vue'
-import PokemonCardImage from '@/components/pokemon-card/PokemonCardImage.vue'
-import PokemonCardStats from '@/components/pokemon-card/PokemonCardStats.vue'
-import PokemonCardSkills from '@/components/pokemon-card/PokemonCardSkills.vue'
-import PokemonCardDescription from '@/components/pokemon-card/PokemonCardDescription.vue'
+import CardRenderer from '@/components/card/CardRenderer.vue'
 
 const store = useCardStore()
 
@@ -30,25 +29,7 @@ const hasData = computed(() => {
     Object.values(data).some(v => v && v.trim() !== '')
 })
 
-const statValues = computed(() => {
-  const data = store.cardData
-  const statKeys = ['wisdom', 'constitution', 'perception', 'luck', 'charm', 'strength']
-  const stats: Record<string, number> = {}
-  for (const key of statKeys) {
-    const val = data[key]
-    stats[key] = val ? parseInt(String(val), 10) || 0 : 0
-  }
-  return stats
-})
-
-const name = computed(() => store.cardData['name'] ?? '')
-const type = computed(() => store.cardData['type'] ?? '')
-const level = computed(() => store.cardData['level'] ?? '')
-const cp = computed(() => store.cardData['cp'] ?? '')
-const skills = computed(() => store.cardData['skills'] ?? '')
-const description = computed(() => store.cardData['description'] ?? '')
 const image = computed(() => store.uploadedImage)
-const templateName = computed(() => store.selectedTemplate?.name ?? '')
 
 /** Shape mask + crop style from imageConfig */
 const imageShapeStyle = computed(() => {
@@ -106,44 +87,13 @@ const imageShapeStyle = computed(() => {
       <!-- Card with shadow -->
       <div class="canvas-card-wrapper">
         <div class="canvas-card">
-          <PokemonCardContainer :theme="theme">
-            <PokemonCardBackground
-              :theme="theme"
-              :template="store.selectedTemplate"
-            />
-            <div class="preview-content">
-              <PokemonCardHeader
-                :name="name"
-                :type="type"
-                :theme="theme"
-                :template="store.selectedTemplate"
-                :level="level"
-                :cp="cp"
-              />
-              <div :style="imageShapeStyle">
-                <PokemonCardImage
-                  :image="image"
-                  :name="name"
-                />
-              </div>
-              <PokemonCardStats
-                :theme="theme"
-                :stats="statValues"
-              />
-              <PokemonCardSkills
-                :theme="theme"
-                :skills="skills"
-              />
-              <PokemonCardDescription
-                :description="description"
-                :theme="theme"
-              />
-              <div class="preview-footer">
-                <span>GameCard</span>
-                <span>{{ templateName }}</span>
-              </div>
-            </div>
-          </PokemonCardContainer>
+          <CardRenderer
+            :template="store.selectedTemplate"
+            :card-data="store.cardData"
+            :theme="theme"
+            :image-url="image"
+            :image-style="imageShapeStyle"
+          />
         </div>
       </div>
 
@@ -228,24 +178,6 @@ const imageShapeStyle = computed(() => {
     0 12px 48px rgba(0, 0, 0, 0.10),
     0 32px 80px rgba(0, 0, 0, 0.12);
   transform: translateY(-2px);
-}
-
-/* =============================================
-   Card inner content (same as before)
-   ============================================= */
-.preview-content {
-  position: relative;
-  z-index: 10;
-}
-
-.preview-footer {
-  margin-top: var(--gc-space-md);
-  padding-top: var(--gc-space-sm);
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  display: flex;
-  justify-content: space-between;
-  font-size: 10px;
-  color: rgba(255, 255, 255, 0.4);
 }
 
 /* =============================================

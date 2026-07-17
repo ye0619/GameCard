@@ -65,11 +65,16 @@ public class Template {
      */
     private Map<String, ThemeMappingItem> themeMapping;
 
-    /**
-     * Field name used as the theme lookup key.
-     * e.g. "type" means cardData["type"] drives the theme.
+    /** Field name used as the theme lookup key.
+     * e.g. "nature" means cardData["nature"] drives the theme.
      */
     private String themeField;
+
+    /**
+     * List of field keys that represent numerical stats for radar/bar display.
+     * e.g. ["wisdom", "constitution", "perception"]
+     */
+    private List<String> statFields;
 
     /** Template asset definitions */
     private TemplateAssets assets;
