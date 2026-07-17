@@ -5,23 +5,32 @@
 defineProps<{
   image: string | null
   name: string
+  /** 图片变换样式（缩放/位移，来自编辑器 pan 模式） */
+  imgStyle?: Record<string, string>
 }>()
 </script>
 
 <template>
+  <!-- 有图片时：无背景遮罩，图片自然地浮在卡片上 -->
   <div
+    v-if="image"
+    class="relative mb-4"
+  >
+    <img
+      :src="image"
+      :alt="name || '角色图片'"
+      class="w-full h-auto object-contain"
+      :style="imgStyle"
+    />
+  </div>
+
+  <!-- 无图片时：显示空状态占位 -->
+  <div
+    v-else
     class="relative rounded-xl overflow-hidden mb-4 bg-gray-800/50 border border-gray-700"
     style="aspect-ratio: 16 / 10;"
   >
-    <img
-      v-if="image"
-      :src="image"
-      :alt="name || '角色图片'"
-      class="w-full h-full object-contain p-4"
-    />
-
     <div
-      v-else
       class="flex flex-col items-center justify-center h-full text-gray-600 gap-2"
     >
       <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">

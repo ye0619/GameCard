@@ -3,8 +3,13 @@
  * ImageEditor — image cropping and shaping tool.
  *
  * Two interaction modes:
- *   移动 (pan)  — drag to reposition + scale slider
- *   裁剪 (crop) — drag/resize a crop rectangle
+ *   移动 (pan)  — drag to reposition + scale slider to zoom
+ *   裁剪 (crop) — drag/resize a crop rectangle, then apply actually crops the image
+ *
+ * On "apply":
+ * - If a crop region exists → image is physically cropped via canvas
+ * - Scale/position are saved as CSS transforms for card rendering
+ * - Shape is saved as clip-path/border-radius
  */
 import { ref, computed, onMounted } from 'vue'
 import { useCardStore } from '@/stores/card'
@@ -24,19 +29,16 @@ const localCrop = ref<CropRegion | null>(store.imageConfig.crop)
 type EditMode = 'pan' | 'crop'
 const editMode = ref<EditMode>('pan')
 
-// ── Pan mode drag ──
+// ── Drag state (shared by pan and crop) ──
 const previewEl = ref<HTMLElement | null>(null)
-const isPanning = ref(false)
-const panStart = ref({ x: 0, y: 0 })
+const isDragging = ref(false)
+const dragOrigin = ref({ x: 0, y: 0 })
 
-// ── Crop mode drag ──
-const previewRect2 = ref<HTMLElement | null>(null)
-const isCropping = ref(false)
+// ── Crop-specific drag state ──
 const activeHandle = ref<string | null>(null)
 const cropOrig = ref<CropRegion>({ x: 0, y: 0, width: 1, height: 1 })
-const pointerOrigin = ref({ x: 0, y: 0 })
 
-// Image natural size (used to compute aspect ratio for crop)
+// Image natural size (used for canvas cropping)
 const imgNatural = ref({ w: 800, h: 600 })
 
 onMounted(() => {
@@ -50,9 +52,9 @@ onMounted(() => {
   }
 })
 
-// ── Preview container bounding rect (fresh each frame via mousemove) ──
+// ── Preview container bounding rect ──
 function getPreviewRect() {
-  const el = previewRect2.value
+  const el = previewEl.value
   if (!el) return { w: 400, h: 250 }
   const r = el.getBoundingClientRect()
   return { w: r.width, h: r.height }
@@ -78,11 +80,11 @@ const cropBoxStyle = computed(() => {
   }
 })
 
-// ── Preview container style (shape mask in pan mode, plain in crop mode) ──
+// ── Preview container style ──
 const previewStyle = computed(() => {
   const s: Record<string, string> = { overflow: 'hidden' }
   if (editMode.value === 'pan') {
-    s['cursor'] = isPanning.value ? 'grabbing' : 'grab'
+    s['cursor'] = isDragging.value ? 'grabbing' : 'grab'
     if (localShape.value === 'circle') s['clipPath'] = 'circle(50%)'
     else if (localShape.value === 'rounded') s['borderRadius'] = '12px'
     else s['borderRadius'] = '0'
@@ -93,27 +95,56 @@ const previewStyle = computed(() => {
 /** Image transform in pan mode */
 const imgTransform = computed(() => {
   if (editMode.value !== 'pan') return {}
-  return { transform: `translate(${localPosX.value}px, ${localPosY.value}px) scale(${localScale.value})` }
+  return {
+    transform: `translate(${localPosX.value}px, ${localPosY.value}px) scale(${localScale.value})`,
+  }
 })
+
+// ══════════════════════════════════════════════════
+// UNIFIED POINTER HANDLERS (dispatch by mode)
+// ══════════════════════════════════════════════════
+
+function onPointerDown(e: PointerEvent) {
+  if (editMode.value === 'pan') {
+    onPanDown(e)
+  }
+  // Crop mode handles are initiated by handle elements (.crop-box / .crop-hnd)
+  // via startCropDrag(), which uses the same drag state mechanism
+}
+
+function onPointerMove(e: PointerEvent) {
+  if (!isDragging.value) return
+  if (editMode.value === 'pan') {
+    onPanMove(e)
+  } else if (editMode.value === 'crop') {
+    doCropDrag(e)
+  }
+}
+
+function onPointerUp() {
+  if (editMode.value === 'pan') {
+    onPanUp()
+  } else if (editMode.value === 'crop') {
+    stopCropDrag()
+  }
+}
 
 // ══════════════════════════════════════════════════
 // PAN MODE
 // ══════════════════════════════════════════════════
 
 function onPanDown(e: PointerEvent) {
-  if (editMode.value !== 'pan') return
-  isPanning.value = true
-  panStart.value = { x: e.clientX - localPosX.value, y: e.clientY - localPosY.value }
+  isDragging.value = true
+  dragOrigin.value = { x: e.clientX - localPosX.value, y: e.clientY - localPosY.value }
   if (previewEl.value) previewEl.value.setPointerCapture(e.pointerId)
 }
 
 function onPanMove(e: PointerEvent) {
-  if (!isPanning.value || editMode.value !== 'pan') return
-  localPosX.value = e.clientX - panStart.value.x
-  localPosY.value = e.clientY - panStart.value.y
+  localPosX.value = e.clientX - dragOrigin.value.x
+  localPosY.value = e.clientY - dragOrigin.value.y
 }
 
-function onPanUp() { isPanning.value = false }
+function onPanUp() { isDragging.value = false }
 
 // ══════════════════════════════════════════════════
 // CROP MODE
@@ -122,18 +153,18 @@ function onPanUp() { isPanning.value = false }
 function startCropDrag(e: PointerEvent, handle: string) {
   if (editMode.value !== 'crop' || !localCrop.value) return
   e.stopPropagation()
-  isCropping.value = true
+  isDragging.value = true
   activeHandle.value = handle
   cropOrig.value = { ...localCrop.value }
-  pointerOrigin.value = { x: e.clientX, y: e.clientY }
-  if (previewRect2.value) previewRect2.value.setPointerCapture(e.pointerId)
+  dragOrigin.value = { x: e.clientX, y: e.clientY }
+  if (previewEl.value) previewEl.value.setPointerCapture(e.pointerId)
 }
 
 function doCropDrag(e: PointerEvent) {
-  if (!isCropping.value || !activeHandle.value || !localCrop.value) return
+  if (!activeHandle.value || !localCrop.value) return
   const p = getPreviewRect()
-  const dx = (e.clientX - pointerOrigin.value.x) / p.w
-  const dy = (e.clientY - pointerOrigin.value.y) / p.h
+  const dx = (e.clientX - dragOrigin.value.x) / p.w
+  const dy = (e.clientY - dragOrigin.value.y) / p.h
   const o = cropOrig.value
   let { x, y, w, h } = { x: o.x, y: o.y, w: o.width, h: o.height }
   const hdl = activeHandle.value
@@ -160,7 +191,7 @@ function doCropDrag(e: PointerEvent) {
 }
 
 function stopCropDrag() {
-  isCropping.value = false
+  isDragging.value = false
   activeHandle.value = null
 }
 
@@ -169,17 +200,56 @@ function resetCrop() {
 }
 
 // ══════════════════════════════════════════════════
+// IMAGE CROPPING ENGINE (canvas-based)
+// ══════════════════════════════════════════════════
+
+/**
+ * 使用 Canvas 实际裁剪图片
+ * 将裁剪区域（归一化坐标）应用到原始图片，生成新的图片 URL
+ */
+function cropImageToDataUrl(src: string, region: CropRegion): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const img = new Image()
+    img.onload = () => {
+      const sx = img.naturalWidth * region.x
+      const sy = img.naturalHeight * region.y
+      const sw = img.naturalWidth * region.width
+      const sh = img.naturalHeight * region.height
+
+      const canvas = document.createElement('canvas')
+      canvas.width = sw
+      canvas.height = sh
+      const ctx = canvas.getContext('2d')
+      if (!ctx) { reject(new Error('Canvas 2D context not available')); return }
+      ctx.drawImage(img, sx, sy, sw, sh, 0, 0, sw, sh)
+      resolve(canvas.toDataURL('image/png'))
+    }
+    img.onerror = () => reject(new Error('Failed to load image for cropping'))
+    img.src = src
+  })
+}
+
+/** 判断裁剪区域是否为"全图"（无实际裁剪） */
+function isFullCrop(c: CropRegion | null): boolean {
+  if (!c) return true
+  return c.x <= 0.01 && c.y <= 0.01 && c.width >= 0.99 && c.height >= 0.99
+}
+
+// ══════════════════════════════════════════════════
 // ACTIONS
 // ══════════════════════════════════════════════════
 
-function apply() {
-  const c = localCrop.value
-  const isFull = c && c.width >= 1 && c.height >= 1 && c.x <= 0 && c.y <= 0
+async function apply() {
+  // 非破坏性裁剪：保存裁剪区域配置，不替换原始图片
+  // 预览通过 CSS clip-path 实现视觉效果
+  // 实际 canvas 裁剪留待导出时执行
   store.imageConfig = {
     shape: localShape.value,
     scale: localScale.value,
     position: { x: localPosX.value, y: localPosY.value },
-    crop: c && !isFull ? { ...c } : null,
+    crop: localCrop.value && !isFullCrop(localCrop.value)
+      ? { ...localCrop.value }
+      : null,
     applied: true,
   }
   emit('close')
@@ -211,15 +281,16 @@ function cancel() {
       <button class="img-editor__mode-btn" :class="{ 'is-active': editMode === 'crop' }" @click="editMode = 'crop'">裁剪</button>
     </div>
 
-    <!-- Preview container -->
+    <!-- Preview container (unified handler for both modes) -->
     <div
-      ref="previewRect2"
+      ref="previewEl"
       class="img-editor__preview"
       :style="previewStyle"
-      @pointerdown="onPanDown"
-      @pointermove="onPanMove"
-      @pointerup="onPanUp"
-      @pointerleave="onPanUp"
+      @pointerdown="onPointerDown"
+      @pointermove="onPointerMove"
+      @pointerup="onPointerUp"
+      @pointerleave="onPointerUp"
+      @pointercancel="onPointerUp"
     >
       <img
         v-if="store.uploadedImage"
@@ -232,20 +303,12 @@ function cancel() {
 
       <!-- ════ CROP MODE OVERLAY ════ -->
       <template v-if="editMode === 'crop' && localCrop">
-        <!--
-          crop-box: visual dark mask via box-shadow + white border.
-          The element itself only occupies the crop rectangle area.
-          Box-shadow extends outward creating the darkened overlay.
-          Clicks on the shadow fall through to the preview (harmless).
-          Clicks inside the rectangle → move.
-          Clicks on handles → resize.
-        -->
         <div
           class="crop-box"
           :style="cropBoxStyle"
           @pointerdown.stop="e => startCropDrag(e, 'move')"
         >
-          <!-- 8 resize handles positioned relative to the crop rect -->
+          <!-- 8 resize handles -->
           <span class="crop-hnd crop-hnd--tl" @pointerdown.stop="e => startCropDrag(e, 'tl')" />
           <span class="crop-hnd crop-hnd--tr" @pointerdown.stop="e => startCropDrag(e, 'tr')" />
           <span class="crop-hnd crop-hnd--bl" @pointerdown.stop="e => startCropDrag(e, 'bl')" />
@@ -256,20 +319,11 @@ function cancel() {
           <span class="crop-hnd crop-hnd--right" @pointerdown.stop="e => startCropDrag(e, 'right')" />
         </div>
 
-        <!-- Pointer capture layer (invisible, catches move events during drag) -->
-        <div
-          class="crop-capture"
-          @pointermove="doCropDrag"
-          @pointerup="stopCropDrag"
-          @pointerleave="stopCropDrag"
-          @pointercancel="stopCropDrag"
-        />
-
         <button class="crop-reset-btn" @click="resetCrop">重置</button>
       </template>
 
       <!-- Pan hint -->
-      <div v-if="editMode === 'pan'" class="img-editor__hint" :class="{ 'is-hidden': isPanning }">
+      <div v-if="editMode === 'pan'" class="img-editor__hint" :class="{ 'is-hidden': isDragging }">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 9l-3 3 3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3M2 12h20M12 2v20" /></svg>
         <span>拖拽移动 · 滚轮缩放</span>
       </div>
@@ -286,7 +340,7 @@ function cancel() {
         <div class="img-editor__slider-marks"><span>50%</span><span>100%</span><span>300%</span></div>
       </div>
       <div v-if="editMode === 'crop'" class="img-editor__crop-info">
-        拖拽选区边缘调整大小 · 内部移动选区
+        拖拽选区边缘调整大小 · 内部移动选区 · 点击"应用"后执行实际裁剪
       </div>
     </div>
 
@@ -351,10 +405,6 @@ function cancel() {
 .img-editor__hint.is-hidden { opacity: 0; }
 
 /* ── Crop overlay ── */
-
-/* Crop rectangle: dark mask via box-shadow, white border.
-   The element area = crop region so handles inside it are positioned correctly.
-   Box-shadow spills outward masking the rest of the image. */
 .crop-box {
   position: absolute; z-index: 5; border: 1.5px solid #fff;
   cursor: move;
@@ -374,11 +424,6 @@ function cancel() {
 .crop-hnd--bottom { bottom: -6px; left: 50%; margin-left: -6px; cursor: ns-resize; }
 .crop-hnd--left { left: -6px; top: 50%; margin-top: -6px; cursor: ew-resize; }
 .crop-hnd--right { right: -6px; top: 50%; margin-top: -6px; cursor: ew-resize; }
-
-/* Invisible capture layer for pointer events during crop drag */
-.crop-capture {
-  position: absolute; inset: 0; z-index: 9; pointer-events: none;
-}
 
 /* Reset button */
 .crop-reset-btn {

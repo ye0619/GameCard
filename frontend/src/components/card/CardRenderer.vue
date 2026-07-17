@@ -30,6 +30,8 @@ const props = defineProps<{
   imageUrl: string | null
   /** 图片裁剪/形状样式（由编辑器控制） */
   imageStyle?: Record<string, string>
+  /** 图片变换样式（缩放/位移，来自编辑器 pan 模式） */
+  imageTransform?: Record<string, string>
 }>()
 
 /** 从 template.fields 中查找字段 label */
@@ -104,7 +106,7 @@ const templateName = computed(() => props.template?.name ?? '')
         :badges="headerBadges"
       />
       <div :style="imageStyle">
-        <CardImage :image="imageUrl" :name="name" />
+        <CardImage :image="imageUrl" :name="name" :img-style="imageTransform" />
       </div>
       <CardStats :theme="theme" :stats="statValues" :stat-fields="statFields" />
       <CardSkills :theme="theme" :skills="skills" />

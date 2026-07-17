@@ -33,31 +33,43 @@ const image = computed(() => store.uploadedImage)
 
 /** Shape mask + crop style from imageConfig */
 const imageShapeStyle = computed(() => {
+  const s: Record<string, string> = {}
   const cfg = store.imageConfig
-  if (!cfg.applied) return {}
-  const s: Record<string, string> = { overflow: 'hidden' }
+  if (!cfg.applied) return s
 
-  // Crop via clip-path inset
+  s['overflow'] = 'hidden'
+
+  // Crop: 用 inset clip-path 遮罩（非破坏性，原始图不变）
   if (cfg.crop) {
     const t = cfg.crop.y
     const r = 1 - cfg.crop.x - cfg.crop.width
     const b = 1 - cfg.crop.y - cfg.crop.height
     const l = cfg.crop.x
     s['clipPath'] = `inset(${t * 100}% ${r * 100}% ${b * 100}% ${l * 100}%)`
+    // 有 crop 时不叠加 shape（clip-path 无法叠加）
+    return s
   }
 
-  // Shape mask (only if no crop, since clip-path can't stack)
-  if (!cfg.crop) {
-    if (cfg.shape === 'circle') {
-      s['clipPath'] = 'circle(50%)'
-    } else if (cfg.shape === 'rectangle') {
-      s['borderRadius'] = '0'
-    } else {
-      s['borderRadius'] = '12px'
-    }
+  // 无 crop：用形状 clip-path 或 borderRadius
+  if (cfg.shape === 'circle') {
+    s['clipPath'] = 'circle(50%)'
+  } else if (cfg.shape === 'rounded') {
+    s['borderRadius'] = '12px'
+  } else {
+    s['borderRadius'] = '0'
   }
 
   return s
+})
+
+/** Image transform (scale + position pan) from editor */
+const imageTransform = computed((): Record<string, string> => {
+  const cfg = store.imageConfig
+  if (!cfg.applied) return {}
+  if (cfg.scale === 1 && cfg.position.x === 0 && cfg.position.y === 0) return {}
+  return {
+    transform: `translate(${cfg.position.x}px, ${cfg.position.y}px) scale(${cfg.scale})`,
+  }
 })
 </script>
 
@@ -93,6 +105,7 @@ const imageShapeStyle = computed(() => {
             :theme="theme"
             :image-url="image"
             :image-style="imageShapeStyle"
+            :image-transform="imageTransform"
           />
         </div>
       </div>
