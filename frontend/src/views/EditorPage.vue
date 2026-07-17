@@ -50,6 +50,7 @@ onMounted(() => {
         <p class="editor-panel__title">属性</p>
         <ExportButton
           :card-element="cardPreviewRef?.cardElement ?? null"
+          :get-card-element="cardPreviewRef?.getCardElement ?? null"
         />
       </div>
       <div class="editor-panel__inner">

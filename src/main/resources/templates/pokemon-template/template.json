@@ -7,8 +7,8 @@
   "previewImage": "/images/preview/pokemon.png",
   "tags": ["经典", "日式", "RPG", "图鉴"],
   "size": {
-    "width": 600,
-    "height": 900
+    "width": 1280,
+    "height": 720
   },
   "themeField": "nature",
   "statFields": ["wisdom", "constitution", "perception", "luck", "charm", "strength"],

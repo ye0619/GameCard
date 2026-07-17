@@ -1,6 +1,9 @@
 <script setup lang="ts">
 /**
  * CardBackground - 卡片背景组件
+ *
+ * 基于 pokemon.css 的渐变色背景 + 主题背景图 + 辉光效果
+ * 使用 absolute 铺满整个卡片容器
  */
 import { computed } from 'vue'
 import type { ResolvedTheme } from '@/utils/themeResolver'
@@ -18,7 +21,6 @@ const bgImageUrl = computed(() => {
 })
 
 const bgStyle = computed(() => {
-  const vars = props.theme.cssVars
   if (bgImageUrl.value) {
     return {
       backgroundImage: `url(${bgImageUrl.value})`,
@@ -27,25 +29,26 @@ const bgStyle = computed(() => {
     }
   }
   return {
-    background: `linear-gradient(135deg, ${vars['--card-gradient-start']}, ${vars['--card-gradient-end']})`,
-    opacity: 0.08,
+    background: `linear-gradient(135deg, ${props.theme.cssVars['--card-gradient-start']}, ${props.theme.cssVars['--card-gradient-end']})`,
+    opacity: 0.15,
   }
 })
 </script>
 
 <template>
-  <div class="absolute inset-0 overflow-hidden pointer-events-none">
-    <div
-      class="absolute -top-20 -right-20 w-60 h-60 rounded-full blur-3xl"
-      :style="{ backgroundColor: theme.cssVars['--card-glow'] }"
-    />
-    <div
-      class="absolute -bottom-20 -left-20 w-60 h-60 rounded-full blur-3xl"
-      :style="{ backgroundColor: theme.cssVars['--card-glow'] }"
-    />
-    <div
-      class="absolute inset-0"
-      :style="bgStyle"
-    />
-  </div>
+  <!-- 主背景图 -->
+  <div
+    class="absolute inset-0 pointer-events-none z-0"
+    :style="bgStyle"
+  />
+
+  <!-- 主题辉光效果（左上 + 右下） -->
+  <div
+    class="absolute -top-32 -right-24 w-80 h-80 rounded-full blur-3xl pointer-events-none z-[1]"
+    :style="{ backgroundColor: theme.cssVars['--card-glow'] }"
+  />
+  <div
+    class="absolute -bottom-32 -left-24 w-80 h-80 rounded-full blur-3xl pointer-events-none z-[1]"
+    :style="{ backgroundColor: theme.cssVars['--card-glow'] }"
+  />
 </template>

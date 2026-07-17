@@ -1,67 +1,104 @@
-# 模板系统使用指南
+# 模板系统使用指南（AI 版）
 
-## 概述
-
-模板系统采用**配置驱动**架构，模板仅负责：
-1. 数据展示结构（定义有哪些字段）
-2. 元素排列组合（字段的类型和顺序）
-3. 样式设计（颜色、图标、背景）
-4. 布局控制（通过 themeMapping 控制主题）
-
-模板**不包含**任何业务逻辑判断，所有数据通过统一接口传递。
+> 本文档面向 AI 或开发者，用于指导创建新的游戏卡片模板。
+> 模板系统采用**配置驱动**架构，新增模板只需创建 JSON 文件 + SVG 素材，**无需修改后端 Java 代码**。
 
 ---
 
-## 一、模板文件结构
+## 一、架构总览
 
-### 存放位置
+### 数据流
+
+```
+template.json + SVG 素材
+       │
+       ▼
+LocalTemplateLoader（启动时扫描 classpath:templates/*/template.json）
+       │
+       ▼
+JsonTemplateReader（Jackson 反序列化 → Template Java 对象）
+       │
+       ▼
+TemplateManagerImpl（缓存 + 生命周期管理）
+       │
+       ▼
+TemplateServiceImpl（业务封装）
+       │
+       ▼
+TemplateController（REST API：GET /api/templates）
+       │
+       ▼
+前端 fetchTemplates() → Pinia store → CardRenderer 按配置渲染
+```
+
+### 后端模型类（全部位于 `com.gamecard.template.model`）
+
+```
+Template.java          ← 核心模型，包含所有模板配置
+├── TemplateSize.java         尺寸
+├── TemplateField.java        字段定义
+├── ThemeMappingItem.java     主题映射条目
+├── TemplateAssets.java       资源定义
+├── TemplateMetadata.java     元数据
+├── PresetSkill.java          ✅ 预设技能（新增）
+└── PresetIntroduction.java   ✅ 预设角色简介（新增）
+```
+
+---
+
+## 二、模板文件结构
+
+### 2.1 目录布局
 
 ```
 src/main/resources/
 ├── templates/
-│   └── {your-template-id}/
-│       └── template.json          ← 模板定义文件
+│   └── {your-template-id}/          ← id 必须与目录名一致
+│       └── template.json             ← 模板定义文件（唯一必需）
 │
 └── static/templates/
     └── {your-template-id}/
-        ├── backgrounds/           ← 背景 SVG 素材
-        ├── icons/                 ← 图标 SVG 素材
-        └── frames/                ← 边框 SVG 素材
+        ├── backgrounds/              ← 背景 SVG 素材
+        ├── icons/                    ← 图标 SVG 素材
+        └── frames/                   ← 边框 SVG 素材
 ```
 
-模板扫描路径默认为 `templates/*/template.json`，由 `application.yml` 中 `gamecard.template.scan-path` 控制。
-
-### 前端对应
+### 2.2 前端对应目录
 
 ```
 frontend/src/
-├── types/index.ts                 ← TypeScript 类型定义
-├── stores/card.ts                 ← 状态管理（自动适配模板配置）
-├── components/card/
-│   ├── CardRenderer.vue           ← 通用渲染器（按模板配置渲染）
-│   ├── CardContainer.vue          ← 卡片容器
-│   ├── CardBackground.vue         ← 背景
-│   ├── CardHeader.vue             ← 头部（名称 + 属性标签 + LV/CP）
-│   ├── CardImage.vue              ← 图片
-│   ├── CardStats.vue              ← 属性统计（由 statFields 驱动）
-│   ├── CardSkills.vue             ← 技能列表
-│   └── CardDescription.vue        ← 描述
-└── adapter/
-    ├── types.ts                   ← 数据适配层接口
-    ├── pokemon-adapter.ts         ← Pokemon 数据适配器
-    └── index.ts
+├── types/index.ts                     ← TypeScript 类型定义
+├── stores/card.ts                     ← Pinia 状态管理（自动适配模板）
+├── api/template.ts                    ← API 客户端
+├── adapter/
+│   ├── types.ts                       ← 数据适配层接口
+│   └── pokemon-adapter.ts             ← 参考实现
+├── components/
+│   ├── card/                          ← 卡片渲染组件
+│   │   ├── CardRenderer.vue           ← 通用渲染器
+│   │   ├── CardContainer.vue          ← 卡片容器
+│   │   ├── CardBackground.vue         ← 背景
+│   │   ├── CardHeader.vue             ← 头部（名称 + 属性标签 + 徽章）
+│   │   ├── CardImage.vue              ← 图片
+│   │   ├── CardStats.vue              ← 属性统计（由 statFields 驱动）
+│   │   ├── CardSkills.vue             ← 技能列表
+│   │   └── CardDescription.vue        ← 描述
+│   └── editor/
+│       ├── CardEditor.vue             ← 表单编辑器（自动渲染 fields）
+│       ├── PresetSkillSelector.vue    ✅ 预设技能选择器
+│       └── PresetIntroSelector.vue    ✅ 预设简介选择器
 ```
 
 ---
 
-## 二、template.json 完整结构
+## 三、template.json 完整结构
 
 ```json
 {
   "id": "your-template-id",
   "name": "模板显示名称",
   "description": "模板描述",
-  "author": "作者",
+  "author": "作者名",
   "version": "1.0.0",
   "previewImage": "/images/preview/xxx.png",
   "tags": ["标签1", "标签2"],
@@ -89,7 +126,15 @@ frontend/src/
 
   "fields": [
     { "key": "name", "label": "名称", "type": "TEXT", "required": true },
-    { "key": "nature", "label": "性格", "type": "ENUM", "required": true, "options": "[\"值1\",\"值2\"]" }
+    { "key": "nature", "label": "属性", "type": "ENUM", "required": true, "options": "[\"值1\",\"值2\"]" }
+  ],
+
+  "presetSkills": [
+    { "name": "技能名", "category": "分类", "description": "技能描述", "power": 80 }
+  ],
+
+  "presetIntroductions": [
+    { "title": "预设标题", "content": "简介内容……", "natureHint": "推荐性格" }
   ],
 
   "assets": {
@@ -101,7 +146,7 @@ frontend/src/
 
   "metadata": {
     "createTime": "2026-07-01T00:00:00",
-    "updateTime": "2026-07-16T00:00:00",
+    "updateTime": "2026-07-17T00:00:00",
     "templateVersion": "1.0.0",
     "minAppVersion": "0.1.0"
   }
@@ -110,192 +155,238 @@ frontend/src/
 
 ---
 
-## 三、核心字段详解
+## 四、Java 模型类详解
 
-### 3.1 顶层字段
+### 4.1 Template.java — 核心模板模型
 
-| 字段 | 类型 | 必需 | 说明 |
-|------|------|------|------|
-| `id` | string | ✅ | 模板唯一标识，用于 URL 和缓存 key。必须与目录名一致 |
-| `name` | string | ✅ | 模板显示名称 |
-| `themeField` | string | ✅ | 驱动主题映射的字段 key。用户选择该字段的值 → 匹配 themeMapping → 确定颜色/图标/背景 |
-| `statFields` | string[] | ❌ | 属性统计字段 key 列表。用于雷达图/数值条展示的维度定义 |
-| `themeMapping` | object | ✅ | 主题映射表（见 3.2） |
-| `fields` | array | ✅ | 字段定义列表（见 3.3） |
-| `assets` | object | ✅ | 资源定义（见 3.4） |
+```java
+package com.gamecard.template.model;
 
-### 3.2 themeMapping — 主题映射
-
-`themeMapping` 将 `themeField` 字段的每个可选值映射为一组视觉样式：
-
-```json
-"themeField": "nature",
-"themeMapping": {
-  "暴躁": {
-    "background": "bg-aggressive",     // 对应 assets.backgrounds 的 key
-    "color": "#EF4444",                // 主色
-    "icon": "aggressive",              // 对应 assets.icons 的 key
-    "secondaryColor": "#DC2626",       // 辅助色
-    "styles": {                        // CSS 自定义属性扩展
-      "gradient-start": "#F97316",
-      "gradient-end": "#DC2626",
-      "glow-color": "rgba(239, 68, 68, 0.3)"
-    }
-  }
+@Data @Builder @NoArgsConstructor @AllArgsConstructor
+public class Template {
+    private String id;                          // 模板唯一标识
+    private String name;                        // 显示名称
+    private String description;                 // 描述
+    private String author;                      // 作者
+    private String version;                     // 版本号
+    private String previewImage;                // 预览图路径
+    private List<String> tags;                  // 标签
+    private TemplateSize size;                  // 卡片尺寸
+    private List<TemplateField> fields;         // 字段定义列表
+    private Map<String, ThemeMappingItem> themeMapping;  // 主题映射表
+    private String themeField;                  // 主题驱动字段 key
+    private List<String> statFields;            // 统计字段 key 列表
+    private TemplateAssets assets;              // 资源定义
+    private TemplateMetadata metadata;          // 元数据
+    private List<PresetSkill> presetSkills;     // ✅ 预设技能（可选）
+    private List<PresetIntroduction> presetIntroductions;  // ✅ 预设角色简介（可选）
 }
 ```
 
-**主题映射的值必须与 `themeField` 对应字段的可选值完全一致**。例如 `themeField: "nature"`，则 themeMapping 的 key 必须与 fields 中 `key: "nature"` 的 options 一致。
+> **注意**：`JsonTemplateReader` 使用 Jackson 3.x 反序列化，已关闭 `FAIL_ON_UNKNOWN_PROPERTIES`，所以 JSON 中的未知字段会被安全忽略。这也意味着即使 Java 模型没有某个字段，多余的 JSON 属性也不会报错。
 
-### 3.3 fields — 字段定义
+### 4.2 TemplateField.java — 字段定义
 
-支持以下字段类型：
-
-| type | 说明 | 额外属性 |
-|------|------|---------|
-| `TEXT` | 单行文本 | `placeholder` |
-| `TEXTAREA` | 多行文本 | `placeholder`, `rows` |
-| `NUMBER` | 数字输入 | `placeholder`, `defaultValue` |
-| `SELECT` | 下拉选择 | `options` (JSON 数组字符串) |
-| `ENUM` | 标签组选择 | `options` (JSON 数组字符串) |
-| `ARRAY` | 动态列表 | `fields` (子字段定义) |
-| `COLOR` | 颜色选择器 | |
-| `IMAGE` | 图片上传 | 实际使用独立上传组件 |
-
-字段结构：
-
-```json
-{
-  "key": "field_key",            // 字段标识，在 cardData 中以此 key 存取
-  "label": "显示标签",
-  "type": "ENUM",
-  "required": true,
-  "defaultValue": "默认值",
-  "placeholder": "占位提示",
-  "options": "[\"选项A\",\"选项B\",\"选项C\"]",   // SELECT/ENUM 必填
-  "fields": [                                      // ARRAY 类型必填
-    {
-      "key": "name",
-      "label": "子字段名",
-      "type": "TEXT",
-      "required": true,
-      "placeholder": "请输入..."
-    }
-  ]
+```java
+@Data @Builder @NoArgsConstructor @AllArgsConstructor
+public class TemplateField {
+    private String key;                 // 字段标识
+    private String label;               // 显示标签
+    private String type;                // 字段类型
+    private boolean required;           // 是否必填
+    private String defaultValue;        // 默认值
+    private String placeholder;         // 占位提示
+    private String options;             // SELECT/ENUM 的选项（JSON 数组字符串）
+    private List<TemplateField> fields; // ARRAY 类型的子字段
 }
 ```
 
-### 3.4 assets — 资源定义
+**type 可选值**：
 
-```json
-"assets": {
-  "backgrounds": {
-    "bg-xxx": "backgrounds/xxx.svg"        // themeMapping 通过此 key 引用
-  },
-  "icons": {
-    "xxx-icon": "icons/xxx.svg"            // themeMapping 通过此 key 引用
-  },
-  "frames": {
-    "default": "frames/default.svg"
-  },
-  "fonts": {}
+| type | 说明 | 渲染组件 | 额外字段 |
+|------|------|---------|---------|
+| `TEXT` | 单行文本 | `<input>` | placeholder |
+| `TEXTAREA` | 多行文本 | `<textarea>` | placeholder |
+| `NUMBER` | 数字 | `<input type="number">` | placeholder, defaultValue |
+| `SELECT` | 下拉选择 | `<select>` | options（JSON 字符串数组） |
+| `ENUM` | 标签组 | 按钮组 | options（JSON 字符串数组） |
+| `ARRAY` | 动态列表 | 输入列表 + 添加/删除 | fields（子字段定义） |
+| `COLOR` | 颜色选择 | `<input type="color">` | — |
+| `IMAGE` | 图片上传 | 独立上传组件 | — |
+
+### 4.3 ThemeMappingItem.java — 主题映射条目
+
+```java
+@Data @Builder @NoArgsConstructor @AllArgsConstructor
+public class ThemeMappingItem {
+    private String background;                  // 背景标识
+    private String color;                       // 主色调
+    private String icon;                        // 图标标识
+    private String secondaryColor;              // 辅助色
+    private Map<String, String> styles;         // 扩展样式（gradient-start, gradient-end, glow-color）
 }
 ```
 
-资源路径相对于 `static/templates/{template-id}/` 目录。
+### 4.4 TemplateAssets.java — 资源定义
+
+```java
+@Data @Builder @NoArgsConstructor @AllArgsConstructor
+public class TemplateAssets {
+    private Map<String, String> backgrounds;    // 背景映射
+    private Map<String, String> icons;          // 图标映射
+    private Map<String, String> frames;         // 边框映射
+    private Map<String, String> fonts;          // 字体映射
+}
+```
+
+### 4.5 TemplateSize.java
+
+```java
+@Data @Builder @NoArgsConstructor @AllArgsConstructor
+public class TemplateSize {
+    private int width;
+    private int height;
+}
+```
+
+### 4.6 TemplateMetadata.java
+
+```java
+@Data @Builder @NoArgsConstructor @AllArgsConstructor
+public class TemplateMetadata {
+    private String createTime;          // ISO 日期字符串
+    private String updateTime;          // ISO 日期字符串
+    private String templateVersion;     // 模板版本
+    private String minAppVersion;       // 最低应用版本
+}
+```
+
+### 4.7 PresetSkill.java — 预设技能 ✅
+
+```java
+@Data @Builder @NoArgsConstructor @AllArgsConstructor
+public class PresetSkill {
+    private String name;                // 技能名称（必需）
+    private String category;            // 分类（如"攻击""防御""辅助""特殊"）
+    private String description;         // 技能描述
+    private Integer power;              // 威力等级（1-100）
+}
+```
+
+### 4.8 PresetIntroduction.java — 预设角色简介 ✅
+
+```java
+@Data @Builder @NoArgsConstructor @AllArgsConstructor
+public class PresetIntroduction {
+    private String title;               // 预设标题（必需）
+    private String content;             // 简介/背景故事内容（必需）
+    private String natureHint;          // 推荐性格搭配
+}
+```
 
 ---
 
-## 四、修改现有模板
+## 五、前端 TypeScript 接口
 
-以 pokemon-template 为例：
+### 5.1 Template（完整定义，位于 `types/index.ts`）
 
-### 4.1 修改字段
-
-编辑 `src/main/resources/templates/pokemon-template/template.json` 中的 `fields` 数组。
-
-**示例：增加一个新属性字段**
-
-```json
-{
-  "key": "agility",
-  "label": "敏捷",
-  "type": "NUMBER",
-  "required": false,
-  "defaultValue": "60",
-  "placeholder": "敏捷"
+```typescript
+export interface Template {
+  id: string
+  name: string
+  description: string
+  author: string
+  version: string
+  previewImage: string
+  tags: string[]
+  size: TemplateSize | null
+  fields: TemplateField[]
+  themeMapping: Record<string, ThemeMappingItem> | null
+  themeField: string | null
+  statFields: string[] | null
+  assets: TemplateAssets | null
+  metadata: TemplateMetadata
+  presetSkills?: PresetSkill[] | null            // ✅
+  presetIntroductions?: PresetIntroduction[] | null  // ✅
 }
 ```
 
-同时更新 `statFields` 数组：
+### 5.2 PresetSkill（位于 `types/index.ts`）
 
-```json
-"statFields": ["wisdom", "constitution", "perception", "luck", "charm", "strength", "agility"]
-```
-
-> **注意**：雷达图仅在 statFields 恰好为 6 项时显示。超过 6 项只显示数值条。
-
-### 4.2 修改主题映射
-
-**不改颜色，只改名称：**
-
-修改 `themeMapping` 的 key 和 `fields` 中对应 ENUM 的 `options` 即可。确保两者一致。
-
-**示例：将"暴躁"改为"热血"**
-
-```json
-// themeMapping 中
-"热血": {
-  "background": "bg-aggressive",   // 颜色资产不变
-  "color": "#EF4444",
-  "icon": "aggressive"
-}
-
-// fields 中
-{
-  "key": "nature",
-  "label": "性格",
-  "type": "ENUM",
-  "options": "[\"热血\",\"温柔\",\"活泼\",...]"
+```typescript
+export interface PresetSkill {
+  name: string              // 技能名称
+  category?: string         // 分类（"攻击"/"防御"/"辅助"/"特殊"）
+  description?: string      // 技能描述
+  power?: number            // 威力（1-100）
 }
 ```
 
-### 4.3 修改视觉风格
+### 5.3 PresetIntroduction（位于 `types/index.ts`）
 
-每个 themeMapping 条目控制：
-- `color` / `secondaryColor` — 主色/辅色
-- `styles.gradient-start` / `gradient-end` — 渐变起止色
-- `styles.glow-color` — 辉光色
-- `background` — 背景图（需在 assets 中有对应 entry）
-- `icon` — 图标（需在 assets 中有对应 entry）
+```typescript
+export interface PresetIntroduction {
+  title: string             // 预设标题
+  content: string           // 简介内容
+  natureHint?: string       // 推荐性格
+}
+```
 
-修改颜色值即可改变对应主题的视觉风格。
+### 5.4 其他重要接口
 
-### 4.4 替换/新增 SVG 素材
+```typescript
+export interface ThemeMappingItem {
+  background: string
+  color: string
+  icon: string
+  secondaryColor?: string
+  styles?: Record<string, string>
+}
 
-1. 将 SVG 文件放入 `static/templates/{template-id}/backgrounds/` 或 `icons/`
-2. 在 `assets.backgrounds` 或 `assets.icons` 中添加映射条目
-3. 在 `themeMapping` 中引用新 key
+export interface TemplateField {
+  key: string
+  label: string
+  type: FieldType    // 'TEXT' | 'TEXTAREA' | 'IMAGE' | 'NUMBER' | 'SELECT' | 'ENUM' | 'ARRAY' | 'COLOR'
+  required: boolean
+  defaultValue: string | null
+  placeholder: string | null
+  options: string | null     // JSON 数组字符串
+  fields: TemplateField[] | null  // ARRAY 子字段
+}
+
+export interface TemplateAssets {
+  backgrounds: Record<string, string> | null
+  icons: Record<string, string> | null
+  frames: Record<string, string> | null
+  fonts: Record<string, string> | null
+}
+
+export interface CardData {
+  [key: string]: string     // 用户填写的卡片数据
+}
+```
 
 ---
 
-## 五、创建新模板
+## 六、创建新模板的步骤
 
-### 步骤 1：创建目录和 JSON
+### 步骤 1：确定模板 ID 和目录
 
+```bash
+# 创建模板定义文件
+src/main/resources/templates/{your-id}/template.json
+
+# 创建素材目录
+src/main/resources/static/templates/{your-id}/backgrounds/
+src/main/resources/static/templates/{your-id}/icons/
+src/main/resources/static/templates/{your-id}/frames/
 ```
-src/main/resources/
-├── templates/my-character/       ← id 为 "my-character"
-│   └── template.json
-└── static/templates/my-character/
-    ├── backgrounds/
-    ├── icons/
-    └── frames/
-```
+
+> ⚠️ `template.json` 中的 `id` 字段必须与目录名完全一致。
 
 ### 步骤 2：编写 template.json
 
-参考以下最小模板：
+使用以下最小模板作为起点：
 
 ```json
 {
@@ -325,7 +416,15 @@ src/main/resources/
   "fields": [
     { "key": "name", "label": "名称", "type": "TEXT", "required": true, "placeholder": "角色名" },
     { "key": "type", "label": "类型", "type": "ENUM", "required": true, "options": "[\"默认\"]" },
-    { "key": "description", "label": "描述", "type": "TEXTAREA", "required": false, "placeholder": "输入描述..." }
+    { "key": "description", "label": "描述", "type": "TEXTAREA", "required": false, "placeholder": "输入描述..." },
+    { "key": "image", "label": "角色图片", "type": "IMAGE", "required": true }
+  ],
+  "presetIntroductions": [
+    {
+      "title": "示例角色",
+      "content": "一个来自奇幻世界的冒险者，正在寻找属于自己的传奇……",
+      "natureHint": "默认"
+    }
   ],
   "assets": {
     "backgrounds": { "default-bg": "backgrounds/default.svg" },
@@ -342,120 +441,177 @@ src/main/resources/
 }
 ```
 
-### 步骤 3：添加素材
+### 步骤 3：添加 SVG 素材
 
-创建必要的 SVG 文件：
 - `static/templates/my-character/backgrounds/default.svg`
 - `static/templates/my-character/icons/default.svg`
+- 可选：`static/templates/my-character/frames/default.svg`
 
-### 步骤 4：重启应用
+### 步骤 4：重启后端
 
-模板由 `LocalTemplateLoader` 在应用启动时扫描加载。新增模板后需重启后端。
+模板由 `LocalTemplateLoader` 在应用启动时扫描加载。新增模板后需重启 Spring Boot 后端。
 
 ---
 
-## 六、数据流与渲染机制
+## 七、核心机制详解
 
-### 6.1 字段 → 展示 映射
-
-模板字段与渲染组件的对应关系：
-
-| 字段场景 | 渲染组件 | 说明 |
-|---------|---------|------|
-| `name` | CardHeader | 显示为标题 |
-| `themeField` 对应的字段 | CardHeader | 显示为属性标签 + 主题色 |
-| `statFields` 中列出的字段 | CardStats | 显示为数值条 + 雷达图 |
-| `skills` | CardSkills | 显示为技能标签列表 |
-| `description` | CardDescription | 显示为描述文本 |
-| `level`, `cp` | CardHeader | 显示为右侧徽章 |
-| IMAGE 类型字段 | CardImage | 使用独立上传组件 |
-
-### 6.2 主题解析流程
+### 7.1 主题映射（themeMapping）机制
 
 ```
 用户选择 themeField 的值（如 "nature": "暴躁"）
   → resolveTheme() 查找 template.themeMapping["暴躁"]
-    → 返回 { color, icon, background, cssVars }
+    → 返回 ThemeMappingItem { color, icon, background, styles }
       → Card* 组件使用 theme.color / theme.cssVars 渲染
 ```
 
-### 6.3 数据适配层
+**约束**：
+- `themeMapping` 的 key 必须与 `themeField` 对应字段的 `options` 完全一致（区分大小写）
+- 若用户选择的值在 `themeMapping` 中不存在，会使用默认主题（靛蓝色 `#6366F1`）
 
-对于需要从外部导入数据的场景，可使用适配器：
+### 7.2 字段与渲染组件的对应关系
 
-```typescript
-import { pokemonAdapter } from '@/adapter'
+| 字段 key | 渲染组件 | 说明 |
+|---------|---------|------|
+| `name` | CardHeader | 显示为卡片标题 |
+| `themeField` 对应的字段（如 `nature`） | CardHeader | 显示为属性标签，驱动主题色 |
+| `statFields` 中列出的字段 | CardStats | 显示为数值条，6 项时额外显示雷达图 |
+| `skills`（ARRAY 类型） | CardSkills | 显示为技能标签列表 |
+| `description`（TEXTAREA 类型） | CardDescription | 显示为描述文本 |
+| 非 statFields 的 NUMBER 字段（如 `level`, `cp`） | CardHeader | 显示为右侧徽章 |
+| IMAGE 类型字段 | CardImage | 使用独立上传组件 |
 
-const rawData = { name: '喷火龙', type: 'fire' }
-const viewModel = pokemonAdapter.transform(rawData)
-// viewModel.nature → "暴躁"（自动映射）
+### 7.3 预设技能系统（presetSkills）✅
+
+**用途**：为技能输入提供快捷选择列表，用户点击预设即可添加技能到卡片。
+
+**示例数据**：
+```json
+"presetSkills": [
+  { "name": "火焰吐息", "category": "攻击", "description": "释放灼热的火焰", "power": 85 },
+  { "name": "铁壁防御", "category": "防御", "description": "大幅提升防御力", "power": 55 },
+  { "name": "治愈之光", "category": "辅助", "description": "恢复全队生命值", "power": 50 },
+  { "name": "星辰陨落", "category": "特殊", "description": "召唤星辰之力", "power": 100 }
+]
 ```
 
-新增适配器需实现 `CardDataAdapter` 接口：
+**表现**：
+- 在编辑器 ARRAY 类型字段上方显示为分类标签组
+- 点击标签自动将技能添加到输入列表，并同步到卡片数据
+- 已添加的技能显示删除线且不可重复添加
+- 高威力技能（power ≥ 80）悬停时显示红色高亮
+
+**技巧**：
+- 使用 `category` 对技能进行分组，推荐分类：`攻击`、`防御`、`辅助`、`特殊`
+- 不填写 `category` 的技能会被归入 `通用` 分类
+- `power` 仅为视觉提示，不影响实际游戏逻辑
+
+### 7.4 预设角色简介系统（presetIntroductions）✅
+
+**用途**：提供预编写的角色背景故事，用户一键填充到描述字段。
+
+**示例数据**：
+```json
+"presetIntroductions": [
+  {
+    "title": "独行侠客",
+    "content": "一位游历大陆的独行侠客，身披残破的斗篷，腰间的长剑已陪伴他走过无数个春秋……",
+    "natureHint": "高冷"
+  },
+  {
+    "title": "火焰之子",
+    "content": "出生时便被火焰祝福的孩子，体内流淌着灼热的炎之血脉……",
+    "natureHint": "暴躁"
+  }
+]
+```
+
+**表现**：
+- 在编辑器的描述字段下方显示为折叠式选择器
+- 展开后显示预设标题、简介预览和推荐性格标签
+- 根据当前已选的性格匹配推荐预设（高亮显示）
+- 点击预设自动填充描述内容，支持一键清除
+
+**技巧**：
+- `natureHint` 用于与当前选择的性格进行匹配，使推荐更智能
+- `title` 应简短有力（4-8 字为宜）
+- `content` 建议 50-200 字，过长会在预览中截断
+
+### 7.5 数据适配层
+
+对于需要从外部导入数据的场景，可实现 `CardDataAdapter` 接口：
 
 ```typescript
-import type { CardDataAdapter, CardViewModel } from '@/adapter/types'
-
-export class MyAdapter implements CardDataAdapter {
-  readonly id = 'my-adapter'
-  readonly name = '我的适配器'
-
-  canHandle(raw: unknown): raw is Record<string, unknown> {
-    // 判断是否能处理该数据
-    return true
-  }
-
-  transform(raw: Record<string, unknown>): CardViewModel {
-    return {
-      name: String(raw.name ?? ''),
-      nature: String(raw.type ?? ''),
-      stats: {},
-      skills: [],
-      description: String(raw.desc ?? ''),
-      image: null,
-      extras: {},
-    }
-  }
+// frontend/src/adapter/types.ts
+export interface CardDataAdapter<T = Record<string, unknown>> {
+  readonly id: string
+  readonly name: string
+  transform(raw: T): CardViewModel
+  canHandle(raw: unknown): raw is T
 }
 ```
 
+参考实现：`frontend/src/adapter/pokemon-adapter.ts`
+
 ---
 
-## 七、常见问题
+## 八、statFields 与数据展示
+
+### 雷达图 vs 数值条
+
+```
+statFields 数量    →    展示效果
+    0             →    不显示属性区域
+    1-5           →    仅显示数值条
+    6             →    雷达图 + 数值条
+    7+            →    仅显示数值条（超 6 项）
+```
+
+`statFields` 数组中的 key 必须在 `fields` 中有对应的 `NUMBER` 类型字段。
+
+**示例（6 项 → 雷达图）**：
+```json
+"statFields": ["wisdom", "constitution", "perception", "luck", "charm", "strength"]
+```
+
+---
+
+## 九、常见问题排查
 
 ### Q: 新建模板后前端看不到？
-确保：
-1. 目录名与 `template.json` 中的 `id` 一致
-2. 文件位于 `src/main/resources/templates/{id}/template.json`
+1. 确认目录名与 `template.json` 中 `id` 一致
+2. 确认文件路径为 `src/main/resources/templates/{id}/template.json`
 3. 重启后端应用
 
 ### Q: 主题颜色不生效？
-检查：
-1. `themeField` 指定的字段 key 在 `fields` 中存在
-2. `themeMapping` 的 key 与对应字段的 `options` 值完全一致（区分大小写）
-3. `themeMapping` 中 `color` 值格式正确（如 `"#EF4444"`）
-
-### Q: 图标/背景不显示？
-检查：
-1. SVG 文件存在于 `static/templates/{id}/` 下
-2. `assets.backgrounds` / `assets.icons` 中有对应 key
-3. `themeMapping` 中引用的 key 在 `assets` 中存在
-4. SVG 文件路径正确
+1. 确认 `themeField` 指定的 key 在 `fields` 中存在
+2. 确认 `themeMapping` 的 key 与对应 `ENUM` 的 `options` 完全一致
+3. 确认 `color` 值格式为 `"#RRGGBB"`
 
 ### Q: 雷达图不显示？
-检查：
-1. `statFields` 数组是否**恰好 6 项**
-2. `statFields` 中指定的 key 在 `fields` 中都有对应的 NUMBER 字段
-3. 后端 `Template.java` 是否有 `statFields` 字段（Spring Boot 4.x 需确保编译）
+1. 确认 `statFields` 数组**恰好 6 项**
+2. 确认每项在 `fields` 中都有对应的 `NUMBER` 字段
 
-### Q: 属性数值条全为 0？
-检查 `fields` 中对应 NUMBER 字段是否设置了 `defaultValue`。如果没有默认值，前端会用 0 填充。
+### Q: 预设技能不显示？
+1. 确认 `presetSkills` 数组格式正确，每个元素至少包含 `name`
+2. 确认模板中有 ARRAY 类型的字段用于技能输入
+3. 重启后端使 JSON 变更生效
+
+### Q: 预设简介不显示？
+1. 确认 `presetIntroductions` 数组格式正确，每个元素包含 `title` 和 `content`
+2. 仅在 `key: "description"` 的 TEXTAREA 字段下显示
+3. 重启后端使 JSON 变更生效
+
+### Q: 图标/背景不显示？
+1. SVG 文件是否存在于 `static/templates/{id}/backgrounds/` 或 `icons/`
+2. `assets` 中是否有对应映射
+3. `themeMapping` 中引用的 key 是否在 `assets` 中存在
 
 ---
 
-## 八、模板设计原则
+## 十、模板设计原则
 
 1. **语义中立**：字段 key 使用通用名称（`nature` 而非 `pokemon_type`），便于跨模板复用
-2. **配置驱动**：所有视觉变化通过 `themeMapping` 控制，不修改前端组件代码
-3. **数据解耦**：模板不关心数据来源，通过适配层处理数据格式转换
-4. **渐进增强**：可在不影响现有功能的前提下逐步扩展模板能力
+2. **配置驱动**：所有视觉变化通过 `themeMapping` 控制，不修改前端渲染组件
+3. **数据解耦**：模板不关心数据来源，通过适配层处理格式转换
+4. **渐进增强**：`presetSkills` 和 `presetIntroductions` 为可选字段，不影响旧模板
+5. **素材完整**：每个 `themeMapping` 条目引用的 `background` 和 `icon`，必须在 `assets` 中有对应条目

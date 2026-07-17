@@ -66,14 +66,22 @@ export function validateElement(
 }
 
 /**
- * 等待字体加载完成
+ * 等待字体加载完成（带超时，避免字体加载失败导致导出卡住）
  */
 async function waitForFonts(): Promise<void> {
   if (typeof document !== 'undefined' && document.fonts?.ready) {
-    await document.fonts.ready
+    // 字体加载超时 5 秒，避免网络慢或无字体时卡死导出
+    await Promise.race([
+      document.fonts.ready,
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('字体加载超时，强制继续导出')), 5000),
+      ),
+    ]).catch(() => {
+      // 字体超时不阻断导出流程，继续使用 fallback 字体
+    })
   }
-  // 额外等待一帧，让浏览器完成字体重排
-  await new Promise((r) => setTimeout(r, 200))
+  // 额外等待至少一帧（300ms > 一般的 requestAnimationFrame 间隔），让浏览器完成字体重排
+  await new Promise((r) => setTimeout(r, 300))
 }
 
 // ══════════════════════════════════════════════════
@@ -110,6 +118,11 @@ export function useCardExport() {
       return { success: false, error: '正在导出中，请稍候' }
     }
 
+    // Fallback: 如果传入的 element 无效，尝试从 DOM 中查找 .game-card
+    if (!element || !(element instanceof HTMLElement)) {
+      element = document.querySelector<HTMLElement>('.game-card')
+    }
+
     // 验证元素
     const validation = validateElement(element)
     if (!validation.valid) {
@@ -127,10 +140,33 @@ export function useCardExport() {
       // 1. 等待字体加载
       await waitForFonts()
 
-      // 2. 导出为 Blob
-      const blob = await exportToBlob(element!, opts)
+      // 此时 element 已验证为有效的 HTMLElement（见上面的 validateElement）
+      let exportEl = element as HTMLElement
 
-      // 3. 生成文件名并下载
+      // 2. 确保 element 在 DOM 中仍然有效（修复编辑器 DOM 变动导致引用失效的问题）
+      if (!exportEl.isConnected) {
+        exportEl = document.querySelector<HTMLElement>('.game-card')!
+        if (!exportEl) {
+          throw new Error('卡片元素已从 DOM 中移除，请刷新页面重试')
+        }
+      }
+
+      // 3. 导出为 Blob（带重试机制）
+      let blob: Blob | null = null
+      try {
+        blob = await exportToBlob(exportEl, opts)
+      } catch (firstErr) {
+        // 首次失败时，用 querySelector 重新获取元素再试一次
+        const retryEl = document.querySelector<HTMLElement>('.game-card')
+        if (retryEl && retryEl !== exportEl) {
+          console.warn('Export first attempt failed, retrying with fresh element ref:', firstErr)
+          blob = await exportToBlob(retryEl, opts)
+        } else {
+          throw firstErr
+        }
+      }
+
+      // 4. 生成文件名并下载
       const ext = opts.format === 'jpg' ? 'jpeg' : opts.format
       const filename = generateFilename(cardName, opts.format, ext)
       downloadBlob(blob, filename)
@@ -148,7 +184,17 @@ export function useCardExport() {
 
       return result
     } catch (err: any) {
-      const msg = err?.message || err?.toString?.() || '导出失败'
+      let msg: string
+      if (err instanceof Event || (err && err.type && err.target)) {
+        // DOM Event（如 img.onerror）没有 .message，toString 是 [object Event]
+        msg = `导出渲染失败（${err.type || '未知事件'}），请尝试调整卡片样式后重试`
+      } else if (err?.message) {
+        msg = err.message
+      } else if (err?.toString) {
+        msg = err.toString()
+      } else {
+        msg = '导出失败'
+      }
       const result: ExportResult = { success: false, error: msg }
       exportResult.value = result
       exportStatus.value = 'error'

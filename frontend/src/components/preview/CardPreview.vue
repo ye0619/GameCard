@@ -1,29 +1,19 @@
 <script setup lang="ts">
 /**
- * CardPreview — design-canvas card preview.
+ * CardPreview — design-canvas card preview with responsive scaling.
  *
- * Shows the rendered card centered on a design-tool-style canvas
- * with dot-grid background, shadow, and appropriate whitespace.
- *
- * Supports direct image drag-to-move on the card:
- * - When an image is present and imageConfig is applied, user can
- *   drag the image directly on the card to reposition it.
- * - Cursor changes to grab/grabbing for visual feedback.
- *
- * Canvas-level concerns only:
- * - Empty state
- * - Zoom badge
- * - Card wrapper with shadow
- * - Image shape/crop styling (canvas-level editing)
- * - Direct image drag (position update)
- *
- * All card rendering is delegated to CardRenderer.
+ * 1280×720 卡片通过 CSS transform: scale() 自适应居中预览区域，
+ * 确保任何屏幕尺寸下都能完整看到整张卡片。
+ * 拖拽坐标已按缩放比例校正，保证操作手感一致。
  */
-import { ref, computed } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import { useCardStore } from '@/stores/card'
 import { resolveTheme } from '@/utils/themeResolver'
 import EmptyState from '@/components/common/EmptyState.vue'
 import CardRenderer from '@/components/card/CardRenderer.vue'
+
+const CARD_W = 1280
+const CARD_H = 720
 
 const store = useCardStore()
 
@@ -38,6 +28,106 @@ const hasData = computed(() => {
 const image = computed(() => store.uploadedImage)
 
 // ══════════════════════════════════════════════════
+// 导出用的卡片 DOM 引用
+// 通过 document.querySelector('.game-card') 动态查找，
+// 脱离缩放变换树的干扰，确保 html-to-image 捕获到原生尺寸
+// ══════════════════════════════════════════════════
+
+const cardDomRef = ref<HTMLElement | null>(null)
+
+/** 查找卡片 DOM 元素 */
+function refreshCardRef() {
+  if (!hasData.value) {
+    cardDomRef.value = null
+    return
+  }
+  const el = document.querySelector<HTMLElement>('.game-card')
+  if (el && el !== cardDomRef.value) {
+    cardDomRef.value = el
+  }
+}
+
+/**
+ * 对外暴露获取卡片元素的方法（比直接暴露 ref 更可靠）
+ * 父组件通过 cardPreviewRef.getCardElement() 调用
+ */
+function getCardElement(): HTMLElement | null {
+  // 先尝试验证已有的引用
+  if (cardDomRef.value && cardDomRef.value.isConnected) {
+    return cardDomRef.value
+  }
+  // 引用失效时重新查找
+  refreshCardRef()
+  return cardDomRef.value
+}
+
+defineExpose({
+  cardElement: cardDomRef,
+  getCardElement,
+})
+
+// 每次数据变化后重查卡片 DOM（使用更激进的检测策略）
+watch(hasData, () => {
+  // 立即尝试一次，然后 nextTick 再试一次
+  refreshCardRef()
+  nextTick(refreshCardRef)
+  // 极端情况：再等一帧确保渲染完成
+  nextTick(() => nextTick(refreshCardRef))
+})
+watch(theme, () => nextTick(refreshCardRef))
+
+// ══════════════════════════════════════════════════
+// 自适应缩放
+// ══════════════════════════════════════════════════
+
+const canvasAreaRef = ref<HTMLElement | null>(null)
+const scale = ref(1)
+
+function updateScale() {
+  if (!canvasAreaRef.value) return
+  const area = canvasAreaRef.value
+  const pad = 48
+  const availableW = area.clientWidth - pad
+  const availableH = area.clientHeight - pad - 40
+  const s = Math.min(availableW / CARD_W, availableH / CARD_H)
+  scale.value = Math.min(s, 1)
+}
+
+let resizeObserver: ResizeObserver | null = null
+
+/** MutationObserver 兜底：当常规方式无法检测到卡片时轮询 DOM */
+let domObserver: MutationObserver | null = null
+
+onMounted(() => {
+  updateScale()
+  // 挂载时连续尝试 3 次查找卡片
+  refreshCardRef()
+  nextTick(refreshCardRef)
+  nextTick(() => nextTick(refreshCardRef))
+
+  if (canvasAreaRef.value) {
+    resizeObserver = new ResizeObserver(updateScale)
+    resizeObserver.observe(canvasAreaRef.value)
+  }
+
+  // 用 MutationObserver 监控 .canvas-area 子级变化，发现卡片时自动刷新引用
+  const target = canvasAreaRef.value?.parentElement ?? document.querySelector('.editor-canvas')
+  if (target) {
+    domObserver = new MutationObserver(() => {
+      if (!cardDomRef.value || !cardDomRef.value.isConnected) {
+        refreshCardRef()
+      }
+    })
+    domObserver.observe(target, { childList: true, subtree: true })
+  }
+})
+
+onUnmounted(() => {
+  resizeObserver?.disconnect()
+  domObserver?.disconnect()
+})
+
+// ══════════════════════════════════════════════════
 // 直接拖拽移动（在卡片预览上拖拽图片）
 // ══════════════════════════════════════════════════
 
@@ -46,17 +136,10 @@ const dragStart = ref({ x: 0, y: 0 })
 const dragOrigin = ref({ x: 0, y: 0 })
 const cardEl = ref<HTMLElement | null>(null)
 
-/** 卡片 DOM 元素（供导出模块使用） */
-const cardDomRef = ref<HTMLElement | null>(null)
-
-defineExpose({ cardElement: cardDomRef })
-
-/** 是否可以拖拽（有图片且已应用编辑配置） */
 const canDrag = computed(() => !!store.uploadedImage)
 
 function onPointerDown(e: PointerEvent) {
   if (!canDrag.value) return
-  // 忽略非左键点击
   if (e.button !== 0) return
 
   isDragging.value = true
@@ -64,7 +147,6 @@ function onPointerDown(e: PointerEvent) {
   dragStart.value = { x: e.clientX, y: e.clientY }
   dragOrigin.value = { x: pos.x, y: pos.y }
 
-  // 确保 imageConfig 已启用，使变换生效
   if (!store.imageConfig.applied) {
     store.imageConfig.applied = true
   }
@@ -77,8 +159,9 @@ function onPointerDown(e: PointerEvent) {
 function onPointerMove(e: PointerEvent) {
   if (!isDragging.value) return
 
-  const dx = e.clientX - dragStart.value.x
-  const dy = e.clientY - dragStart.value.y
+  // 除以 scale 将屏幕坐标转换为卡片空间坐标
+  const dx = (e.clientX - dragStart.value.x) / scale.value
+  const dy = (e.clientY - dragStart.value.y) / scale.value
 
   store.imageConfig = {
     ...store.imageConfig,
@@ -101,18 +184,15 @@ const imageShapeStyle = computed(() => {
 
   s['overflow'] = 'hidden'
 
-  // Crop: 用 inset clip-path 遮罩（非破坏性，原始图不变）
   if (cfg.crop) {
     const t = cfg.crop.y
     const r = 1 - cfg.crop.x - cfg.crop.width
     const b = 1 - cfg.crop.y - cfg.crop.height
     const l = cfg.crop.x
     s['clipPath'] = `inset(${t * 100}% ${r * 100}% ${b * 100}% ${l * 100}%)`
-    // 有 crop 时不叠加 shape（clip-path 无法叠加）
     return s
   }
 
-  // 无 crop：用形状 clip-path 或 borderRadius
   if (cfg.shape === 'circle') {
     s['clipPath'] = 'circle(50%)'
   } else if (cfg.shape === 'rounded') {
@@ -136,7 +216,7 @@ const imageTransform = computed((): Record<string, string> => {
 </script>
 
 <template>
-  <div class="canvas-area">
+  <div ref="canvasAreaRef" class="canvas-area">
     <!-- Empty state: centered on canvas -->
     <EmptyState
       v-if="!hasData"
@@ -155,35 +235,50 @@ const imageTransform = computed((): Record<string, string> => {
 
     <!-- Rendered card on canvas -->
     <div v-else class="canvas-stage">
-      <!-- Zoom indicator (reserved for future zoom control) -->
-      <div class="canvas-zoom-badge">100%</div>
+      <!-- Zoom badge -->
+      <div class="canvas-zoom-badge">{{ Math.round(scale * 100) }}%</div>
 
-      <!-- Card with shadow — image drag-to-move handlers -->
+      <!-- Card wrapper — visual size = CARD_W * scale -->
       <div
         ref="cardEl"
         class="canvas-card-wrapper"
         :class="{ 'is-dragging': isDragging, 'has-image': !!store.uploadedImage }"
+        :style="{
+          width: CARD_W * scale + 'px',
+          height: CARD_H * scale + 'px',
+        }"
         @pointerdown="onPointerDown"
         @pointermove="onPointerMove"
         @pointerup="onPointerUp"
         @pointerleave="onPointerUp"
         @pointercancel="onPointerUp"
       >
-        <div ref="cardDomRef" class="canvas-card">
-          <CardRenderer
-            :template="store.selectedTemplate"
-            :card-data="store.cardData"
-            :theme="theme"
-            :image-url="image"
-            :image-style="imageShapeStyle"
-            :image-transform="imageTransform"
-          />
+        <!-- Card scaler — always CARD_W × CARD_H, visually scaled via transform -->
+        <div
+          class="canvas-card"
+          :style="{
+            transform: `scale(${scale})`,
+            transformOrigin: 'top left',
+            width: CARD_W + 'px',
+            height: CARD_H + 'px',
+          }"
+        >
+          <div>
+            <CardRenderer
+              :template="store.selectedTemplate"
+              :card-data="store.cardData"
+              :theme="theme"
+              :image-url="image"
+              :image-style="imageShapeStyle"
+              :image-transform="imageTransform"
+            />
+          </div>
         </div>
       </div>
 
       <!-- Dimension label -->
       <p class="canvas-dim">
-        380 × auto
+        {{ CARD_W }} × {{ CARD_H }}
         <span class="canvas-dim-dot">·</span>
         实时预览
       </p>
@@ -201,8 +296,7 @@ const imageTransform = computed((): Record<string, string> => {
   justify-content: center;
   width: 100%;
   min-height: 100%;
-  padding: var(--gc-space-xl);
-  /* Subtle dot-grid background (design-tool canvas) */
+  padding: 24px;
   background-image:
     radial-gradient(circle, rgba(0, 0, 0, 0.06) 1px, transparent 1px);
   background-size: 20px 20px;
@@ -216,16 +310,16 @@ const imageTransform = computed((): Record<string, string> => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--gc-space-md);
+  gap: 16px;
 }
 
 /* =============================================
-   Zoom badge (future zoom control placeholder)
+   Zoom badge
    ============================================= */
 .canvas-zoom-badge {
   position: absolute;
-  bottom: var(--gc-space-md);
-  right: var(--gc-space-md);
+  bottom: 12px;
+  right: 12px;
   font-family: var(--gc-font-mono);
   font-size: 11px;
   padding: 4px 10px;
@@ -235,19 +329,35 @@ const imageTransform = computed((): Record<string, string> => {
   color: var(--gc-ink);
   opacity: 0.5;
   user-select: none;
+  z-index: 1;
 }
 
 /* =============================================
-   Card wrapper — shadow + hover lift + drag
+   Card wrapper — sized container for the scaled card
    ============================================= */
 .canvas-card-wrapper {
-  display: flex;
-  justify-content: center;
+  position: relative;
+  flex-shrink: 0;
   touch-action: none;
   user-select: none;
+  border-radius: 12px;
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.04),
+    0 8px 32px rgba(0, 0, 0, 0.06),
+    0 24px 64px rgba(0, 0, 0, 0.08);
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+  overflow: hidden;
 }
 
-/* 有图片时显示拖拽光标 */
+/* Slight hover lift */
+.canvas-card-wrapper:hover {
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.06),
+    0 12px 48px rgba(0, 0, 0, 0.10),
+    0 32px 80px rgba(0, 0, 0, 0.12);
+  transform: translateY(-2px);
+}
+
 .canvas-card-wrapper.has-image {
   cursor: grab;
 }
@@ -256,23 +366,12 @@ const imageTransform = computed((): Record<string, string> => {
   cursor: grabbing;
 }
 
+/* =============================================
+   Card scaler — native size div, visually scaled
+   ============================================= */
 .canvas-card {
-  width: 400px;
-  border-radius: var(--gc-radius-lg);
-  box-shadow:
-    0 2px 8px rgba(0, 0, 0, 0.04),
-    0 8px 32px rgba(0, 0, 0, 0.06),
-    0 24px 64px rgba(0, 0, 0, 0.08);
-  transition: box-shadow 0.3s ease, transform 0.3s ease;
-}
-
-/* Slight hover lift — feels like a physical card */
-.canvas-card:hover {
-  box-shadow:
-    0 4px 16px rgba(0, 0, 0, 0.06),
-    0 12px 48px rgba(0, 0, 0, 0.10),
-    0 32px 80px rgba(0, 0, 0, 0.12);
-  transform: translateY(-2px);
+  overflow: hidden;
+  border-radius: 12px;
 }
 
 /* =============================================
@@ -284,9 +383,10 @@ const imageTransform = computed((): Record<string, string> => {
   color: var(--gc-ink);
   opacity: 0.25;
   text-align: center;
+  flex-shrink: 0;
 }
 
 .canvas-dim-dot {
-  margin: 0 var(--gc-space-xxs);
+  margin: 0 6px;
 }
 </style>

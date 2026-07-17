@@ -4,19 +4,22 @@
  *
  * 提供"导出图片"一键下载功能。
  * 包含 idle / exporting / success / error 四态。
+ * 导出失败时显示错误消息。
  *
  * 职责仅限 UI 交互，导出逻辑委托给 useCardExport。
  */
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useCardStore } from '@/stores/card'
 import { useCardExport } from '@/export'
 
 const store = useCardStore()
-const { exportStatus, exportCard } = useCardExport()
+const { exportStatus, exportResult, exportCard } = useCardExport()
 
 const props = defineProps<{
   /** 要导出的卡片 DOM 元素 */
   cardElement: HTMLElement | null
+  /** 获取卡片元素的函数（兜底方案） */
+  getCardElement?: (() => HTMLElement | null) | null
 }>()
 
 /** 卡片名称（用于文件名） */
@@ -31,16 +34,44 @@ const isExporting = computed(() => exportStatus.value === 'exporting')
 const isSuccess = computed(() => exportStatus.value === 'success')
 const isError = computed(() => exportStatus.value === 'error')
 
+/** 最近一次错误消息 */
+const errorMessage = ref<string | null>(null)
+
+// 监听导出结果
+watch(exportResult, (result) => {
+  if (result && !result.success) {
+    errorMessage.value = result.error ?? null
+  }
+})
+
+// 成功或空闲时清除错误
+watch(exportStatus, (status) => {
+  if (status === 'idle' || status === 'success') {
+    errorMessage.value = null
+  }
+})
+
 /** 按钮文案 */
 const buttonLabel = computed(() => {
   if (isExporting.value) return '导出中...'
   if (isSuccess.value) return '导出成功 ✓'
+  if (isError.value) return '导出失败'
   return '导出图片'
 })
 
 async function handleExport() {
   if (!canExport.value) return
-  await exportCard(props.cardElement, cardName.value, {
+
+  // 优先使用 getCardElement 函数获取最新元素（比 props 更可靠）
+  let element = props.cardElement
+  if ((!element || !(element instanceof HTMLElement)) && props.getCardElement) {
+    element = props.getCardElement()
+  }
+
+  // 重置错误
+  errorMessage.value = null
+
+  await exportCard(element, cardName.value, {
     format: 'png',
     scale: 2,
   })
@@ -105,6 +136,13 @@ async function handleExport() {
 
       <span class="export-btn__label">{{ buttonLabel }}</span>
     </button>
+
+    <!-- 错误提示 -->
+    <Transition name="slide-fade">
+      <p v-if="isError && errorMessage" class="export-btn__error">
+        {{ errorMessage }}
+      </p>
+    </Transition>
   </div>
 </template>
 
@@ -158,6 +196,18 @@ async function handleExport() {
   color: #ef4444;
 }
 
+/* 错误消息 */
+.export-btn__error {
+  margin-top: 6px;
+  padding: 6px 10px;
+  font-size: 11px;
+  line-height: 1.4;
+  color: #ef4444;
+  background-color: rgba(239, 68, 68, 0.08);
+  border-radius: var(--gc-radius-sm);
+  word-break: break-word;
+}
+
 /* 旋转动画 */
 @keyframes export-spin {
   from { transform: rotate(0deg); }
@@ -170,5 +220,17 @@ async function handleExport() {
 
 .export-btn__label {
   white-space: nowrap;
+}
+
+/* 错误提示过渡动画 */
+.slide-fade-enter-active,
+.slide-fade-leave-active {
+  transition: all 0.2s ease;
+}
+
+.slide-fade-enter-from,
+.slide-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-4px);
 }
 </style>

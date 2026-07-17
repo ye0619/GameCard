@@ -188,9 +188,8 @@ function isAdded(skillName: string): boolean {
 }
 
 .preset-skills__tag.is-added {
-  opacity: 0.25;
+  opacity: 0.5;
   cursor: default;
-  text-decoration: line-through;
 }
 
 .preset-skills__power {

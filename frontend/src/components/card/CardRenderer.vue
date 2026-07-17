@@ -1,15 +1,23 @@
 <script setup lang="ts">
 /**
- * CardRenderer - 通用卡片渲染器
+ * CardRenderer — 通用卡片渲染器（1280×720 横版 HUD 布局）
  *
- * 根据模板配置动态渲染卡片布局。
- * 不包含任何业务逻辑，仅做数据展示编排。
+ * 基于 pokemon.css 的 futuristic HUD 风格布局：
  *
- * 职责：
- * 1. 从 cardData 提取展示字段
- * 2. 从 template.statFields 提取属性维度
- * 3. 从模板字段配置推导 header 徽章列表
- * 4. 按固定布局编排 Card* 组件
+ * ┌──────────────────────────────────────────────────────────────┐
+ * │  ┌──────────────┐               ┌──────┐ ┌──────┐          │
+ * │  │  Skill Panel  │               │ CP   │ │ LV   │          │
+ * │  │  (left 340px) │               └──────┘ └──────┘          │
+ * │  │               │               ┌────────────────────┐     │
+ * │  │  skill 1      │   ┌──────┐   │  Radar Chart       │     │
+ * │  │  skill 2      │   │ Img  │   │  420×420           │     │
+ * │  │  skill 3      │   └──────┘   └────────────────────┘     │
+ * │  │  ...          │                                          │
+ * │  └──────────────┘               ┌────────────────────────┐ │
+ * │                                 │  Identity Panel        │ │
+ * │                                 │  Name / LV / Nature    │ │
+ * │                                 └────────────────────────┘ │
+ * └──────────────────────────────────────────────────────────────┘
  */
 import { computed } from 'vue'
 import type { Template, CardData, TemplateField } from '@/types'
@@ -28,13 +36,10 @@ const props = defineProps<{
   cardData: CardData
   theme: ResolvedTheme
   imageUrl: string | null
-  /** 图片裁剪/形状样式（由编辑器控制） */
   imageStyle?: Record<string, string>
-  /** 图片变换样式（缩放/位移，来自编辑器 pan 模式） */
   imageTransform?: Record<string, string>
 }>()
 
-/** 从 template.fields 中查找字段 label */
 function getFieldLabel(key: string): string {
   return props.template?.fields?.find(f => f.key === key)?.label ?? key
 }
@@ -70,18 +75,15 @@ const name = computed(() => props.cardData['name'] ?? '')
 const nature = computed(() => props.cardData['nature'] ?? '')
 
 /**
- * 右侧徽章：NUMBER 类型且不在 statFields 中的字段
- * 例如：age（年龄）、cp（战斗力）等
+ * 右上角徽章：模板中 age → LV, cp → CP
  */
 const headerBadges = computed(() => {
   if (!props.template) return []
-  const statSet = new Set(props.template.statFields ?? [])
   return props.template.fields
-    .filter((f): f is TemplateField & { type: 'NUMBER' } =>
-      f.type === 'NUMBER' && !statSet.has(f.key),
-    )
+    .filter((f): f is TemplateField & { type: 'NUMBER' } => f.type === 'NUMBER')
     .map(f => ({
-      label: f.label,
+      key: f.key,
+      label: f.key === 'age' ? 'LV' : f.label.toUpperCase(),
       value: props.cardData[f.key] ?? '',
     }))
     .filter(b => b.value !== '')
@@ -92,46 +94,177 @@ const headerBadges = computed(() => {
 const skills = computed(() => props.cardData['skills'] ?? '')
 const description = computed(() => props.cardData['description'] ?? '')
 const templateName = computed(() => props.template?.name ?? '')
+
+/** 计算等级数值（用于 identity panel 的 LV 显示） */
+const levelValue = computed(() => {
+  const age = props.cardData['age']
+  return age ? parseInt(String(age), 10) || 1 : 1
+})
 </script>
 
 <template>
   <CardContainer :theme="theme">
     <CardBackground :theme="theme" :template="template" />
-    <div class="preview-content">
-      <CardHeader
-        :name="name"
-        :type="nature"
+
+    <!-- 右上角 CP / LV 信息 -->
+    <CardHeader
+      :name="name"
+      :type="nature"
+      :theme="theme"
+      :badges="headerBadges"
+    />
+
+    <!-- 左侧技能面板 -->
+    <CardSkills
+      :theme="theme"
+      :skills="skills"
+      :template="template"
+    />
+
+    <!-- 中间角色图片 -->
+    <CardImage
+      :image="imageUrl"
+      :name="name"
+      :img-style="imageTransform"
+    />
+
+    <!-- 右侧雷达图区域 -->
+    <div class="radar-panel">
+      <CardStats
         :theme="theme"
-        :template="template"
-        :badges="headerBadges"
+        :stats="statValues"
+        :stat-fields="statFields"
       />
-      <div :style="imageStyle">
-        <CardImage :image="imageUrl" :name="name" :img-style="imageTransform" />
+    </div>
+
+    <!-- 右下角身份面板 -->
+    <div
+      class="identity-panel"
+      :style="{
+        borderColor: theme.color + '66',
+        background: `rgba(30, 50, 50, 0.55)`,
+      }"
+    >
+      <!-- 角色名称 -->
+      <div class="identity-panel__name" :style="{ color: theme.color }">
+        {{ name || '未知角色' }}
       </div>
-      <CardStats :theme="theme" :stats="statValues" :stat-fields="statFields" />
-      <CardSkills :theme="theme" :skills="skills" />
-      <CardDescription :description="description" :theme="theme" />
-      <div class="preview-footer">
-        <span>GameCard</span>
-        <span>{{ templateName }}</span>
+
+      <!-- 等级和属性标签行 -->
+      <div class="identity-panel__meta">
+        <span class="identity-panel__level">
+          LV.{{ levelValue }}
+        </span>
+
+        <!-- 性格/属性标签 -->
+        <span
+          v-if="nature"
+          class="identity-panel__tag"
+          :style="{ backgroundColor: theme.color }"
+        >
+          <img
+            v-if="theme.icon && template"
+            :src="`/templates/${template.id}/icons/${theme.icon}`"
+            class="identity-panel__tag-icon"
+            alt=""
+            @error="(e: Event) => (e.target as HTMLElement).style.display = 'none'"
+          />
+          {{ nature }}
+        </span>
       </div>
+
+      <!-- 描述文字 -->
+      <p v-if="description" class="identity-panel__desc">
+        {{ description }}
+      </p>
     </div>
   </CardContainer>
 </template>
 
 <style scoped>
-.preview-content {
-  position: relative;
-  z-index: 10;
+/* =============================================
+   右侧雷达图区域
+   ============================================= */
+.radar-panel {
+  position: absolute;
+  right: 75px;
+  top: 55px;
+  width: 380px;
+  height: 380px;
+  z-index: 15;
 }
 
-.preview-footer {
-  margin-top: var(--gc-space-md);
-  padding-top: var(--gc-space-sm);
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+/* =============================================
+   右下角身份面板（identity-panel）
+   对应 pokemon.css 的 .identity-panel
+   ============================================= */
+.identity-panel {
+  position: absolute;
+  right: 0;
+  bottom: 32px;
+  width: 500px;
+  padding: 20px 30px;
+  border-radius: 45px 0 0 45px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 2px solid;
+  border-right: none;
+  z-index: 15;
+}
+
+.identity-panel__name {
+  font-size: 36px;
+  font-weight: bold;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  line-height: 1.1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.identity-panel__meta {
   display: flex;
-  justify-content: space-between;
-  font-size: 10px;
-  color: rgba(255, 255, 255, 0.4);
+  align-items: center;
+  gap: 14px;
+  margin-top: 6px;
+}
+
+.identity-panel__level {
+  font-size: 24px;
+  font-weight: bold;
+  color: rgba(255, 255, 255, 0.8);
+  text-shadow: 2px 2px 3px rgba(0, 0, 0, 0.4);
+}
+
+.identity-panel__tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 16px;
+  border-radius: 30px;
+  font-size: 16px;
+  font-weight: bold;
+  color: white;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.identity-panel__tag-icon {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+}
+
+.identity-panel__desc {
+  margin-top: 8px;
+  font-size: 13px;
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.6);
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
 }
 </style>
