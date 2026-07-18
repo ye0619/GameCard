@@ -88,4 +88,14 @@ public class Template {
     /** Preset character introductions for quick selection (loaded from template.json) */
     private List<PresetIntroduction> presetIntroductions;
 
+    /**
+     * Image processing configuration for AI style transfer.
+     * <p>
+     * Contains the AI image prompt and processing options.
+     * Each template carries its own imageConfig so that
+     * adding a new template never requires code changes.
+     * </p>
+     */
+    private TemplateImageConfig imageConfig;
+
 }

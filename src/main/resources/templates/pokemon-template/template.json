@@ -473,6 +473,13 @@
     },
     "fonts": {}
   },
+  "imageConfig": {
+    "imagePrompt": "Convert the art style of this character to a Japanese monster collecting game (like Pokémon). Cel-shaded anime style with bold clean outlines, vibrant colors, and smooth flat shading. Keep the character's original design, face, pose, costume, and key features completely unchanged — only change the rendering style. Game portrait with clear silhouette, suitable for a monster dex card. Transparent background.",
+    "processing": {
+      "removeBackground": true,
+      "preferredRatio": "1:1"
+    }
+  },
   "metadata": {
     "createTime": "2026-07-01T00:00:00",
     "updateTime": "2026-07-16T00:00:00",

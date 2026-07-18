@@ -90,6 +90,9 @@ export interface Template {
   presetSkills?: PresetSkill[] | null
   /** 预设角色简介列表（快捷选择） */
   presetIntroductions?: PresetIntroduction[] | null
+
+  /** AI 图像处理配置（包含风格提示词等） */
+  imageConfig?: TemplateImageConfig | null
 }
 
 // ===================== 预设技能 =====================
@@ -138,6 +141,86 @@ export interface ApiResult<T> {
 
 /** 图片显示形状 */
 export type ImageShape = 'rectangle' | 'circle' | 'rounded'
+
+// ===================== AI 图像处理 =====================
+
+/** 模板图片处理配置（从 template.json / imageConfig.json 读取） */
+export interface TemplateImageConfig {
+  /** AI 风格提示词，发送给 AI 的 prompt */
+  imagePrompt: string
+  /** 处理选项 */
+  processing?: {
+    /** 是否需要先去除背景再传给 AI */
+    removeBackground?: boolean
+    /** 偏好的宽高比，如 "1:1", "16:9" */
+    preferredRatio?: string
+  }
+}
+
+/** 用户自有的 AI API 配置（仅前端存储，不发送到后端持久化） */
+export interface AiUserConfig {
+  /** API 端点地址，如 https://api.openai.com/v1/images/generations */
+  endpoint: string
+  /** API Key */
+  apiKey: string
+  /** 模型名称，如 dall-e-3 */
+  model: string
+  /** 是否已配置完成 */
+  configured: boolean
+}
+
+/** AI 图片处理请求 */
+export interface AiProcessRequest {
+  /** 原始图片 base64 */
+  imageUrl: string
+  /** 模板 ID，用于查找 imagePrompt */
+  templateId: string
+  /** 操作类型 */
+  operation: 'style'
+  /** 自定义提示词（用户编辑，为空则使用模板默认） */
+  prompt?: string
+  /** 用户 AI 配置（后端透传） */
+  aiConfig: {
+    endpoint: string
+    apiKey: string
+    model: string
+  }
+}
+
+/** AI 图片处理响应 */
+export interface AiProcessResponse {
+  /** 处理后的图片 URL（base64 data URI，用于持久化） */
+  imageUrl: string
+  /** 原始图片 URL（AI API 直接返回，优先用于前端显示） */
+  imageSource?: string
+}
+
+/** 图片处理模式 */
+export type ImageProcessMode = 'original' | 'basic' | 'ai'
+
+// ===================== 保存的作品 =====================
+
+/** 保存的作品（用户创作记录） */
+export interface SavedWork {
+  /** 唯一标识 */
+  id: string
+  /** 卡片名称 */
+  name: string
+  /** 使用的模板 ID */
+  templateId: string
+  /** 模板名称（显示用） */
+  templateName: string
+  /** 卡片所有字段数据 */
+  cardData: Record<string, string>
+  /** 角色图片 base64 data URI */
+  imageData: string | null
+  /** 图片编辑配置（形状、缩放、位置、裁剪） */
+  imageConfig: ImageConfig
+  /** 创建时间 ISO 字符串 */
+  createdAt: string
+  /** 更新时间 ISO 字符串 */
+  updatedAt: string
+}
 
 /** 裁剪区域（归一化坐标 0~1，相对于图片原始尺寸） */
 export interface CropRegion {

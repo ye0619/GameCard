@@ -56,6 +56,13 @@ onMounted(() => {
 // ── Background removal ──
 
 const imageFile = computed(() => store.originalFile)
+const imageDataUri = computed(() => {
+  // 当 originalFile 不存在时（如 AI 生成图片、持久化恢复），用 data URI 兜底
+  if (!store.originalFile && store.uploadedImage?.startsWith('data:')) {
+    return store.uploadedImage
+  }
+  return null
+})
 
 function onBgRemoved(dataUri: string) {
   // 用抠图后的透明 PNG 替换当前预览图片
@@ -353,6 +360,7 @@ function cancel() {
       <!-- 自动去背景 -->
       <BackgroundRemover
         :image-file="imageFile"
+        :image-data-uri="imageDataUri"
         @done="onBgRemoved"
       />
 

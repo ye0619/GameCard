@@ -14,8 +14,10 @@ import { removeBackground } from '@/api/image'
 type BgState = 'idle' | 'processing' | 'success' | 'error'
 
 const props = defineProps<{
-  /** 要处理的图片 File 对象 */
+  /** 要处理的图片 File 对象（优先级高） */
   imageFile: File | null
+  /** 图片 data URI 兜底（当 imageFile 为 null 时使用，如 AI 生成的图片） */
+  imageDataUri?: string | null
 }>()
 
 const emit = defineEmits<{
@@ -28,17 +30,37 @@ const errorMsg = ref('')
 
 /** 是否可以执行去背景 */
 const canProcess = computed(() => {
-  return props.imageFile !== null && state.value !== 'processing'
+  return (props.imageFile !== null || props.imageDataUri != null)
+    && state.value !== 'processing'
 })
 
+/** 将 data URI 转为 File 对象 */
+function dataUriToFile(dataUri: string, filename = 'image.png'): File {
+  const [meta, data] = dataUri.split(',')
+  const mime = meta.match(/:(.*?);/)?.[1] || 'image/png'
+  const binary = atob(data)
+  const array = new Uint8Array(binary.length)
+  for (let i = 0; i < binary.length; i++) {
+    array[i] = binary.charCodeAt(i)
+  }
+  return new File([array], filename, { type: mime })
+}
+
 async function handleRemoveBg() {
-  if (!props.imageFile || state.value === 'processing') return
+  if (state.value === 'processing') return
+
+  // 确定要处理的文件：优先 imageFile，其次从 dataUri 创建
+  let file = props.imageFile
+  if (!file && props.imageDataUri) {
+    file = dataUriToFile(props.imageDataUri, 'ai-processed.png')
+  }
+  if (!file) return
 
   state.value = 'processing'
   errorMsg.value = ''
 
   try {
-    const dataUri = await removeBackground(props.imageFile)
+    const dataUri = await removeBackground(file)
     state.value = 'success'
     emit('done', dataUri)
 
