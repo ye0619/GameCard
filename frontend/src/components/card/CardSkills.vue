@@ -16,6 +16,10 @@ const props = defineProps<{
   theme: ResolvedTheme
   skills: string | undefined
   template: Template | null
+  /** 面板宽度（默认 '340px'） */
+  panelWidth?: string
+  /** 每项技能高度（默认 '52px'） */
+  itemHeight?: string
 }>()
 
 /** 解析后的技能名称列表 */
@@ -47,7 +51,7 @@ function skillColor(name: string): string {
   <div
     v-if="skillList.length > 0"
     class="skill-panel"
-    :style="{ borderRightColor: theme.color + '44' }"
+    :style="{ borderRightColor: theme.color + '44', width: panelWidth || '340px' }"
   >
     <!-- 面板标题 -->
     <div class="skill-panel__header">
@@ -62,7 +66,7 @@ function skillColor(name: string): string {
         v-for="(skill, idx) in skillList"
         :key="idx"
         class="skill-item"
-        :style="{ borderBottomColor: theme.color + '66' }"
+        :style="{ borderBottomColor: theme.color + '66', height: itemHeight || '52px' }"
       >
         <!-- 技能类型圆点图标 -->
         <div
@@ -89,7 +93,6 @@ function skillColor(name: string): string {
   position: absolute;
   left: 0;
   top: 0;
-  width: 340px;
   height: 100%;
   background: rgba(255, 255, 255, 0.12);
   backdrop-filter: blur(8px);

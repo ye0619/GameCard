@@ -152,13 +152,14 @@ watch(
           :presets="selectedTemplate.presetIntroductions"
         />
 
-        <!-- NUMBER -->
+        <!-- NUMBER (保持字符串类型，避免 v-model.number 将值转为 number) -->
         <input
           v-else-if="isNumericField(field)"
-          v-model.number="store.cardData[field.key]"
+          :value="store.cardData[field.key] ?? ''"
           type="number"
           :placeholder="field.placeholder ?? ''"
           class="editor-form__input"
+          @input="store.cardData[field.key] = ($event.target as HTMLInputElement).value"
         />
 
         <!-- SELECT -->

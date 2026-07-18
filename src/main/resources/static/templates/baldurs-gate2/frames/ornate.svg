@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 380 520">
+  <defs>
+    <linearGradient id="ornateGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6B5A42"/>
+      <stop offset="30%" stop-color="#4A3A26"/>
+      <stop offset="70%" stop-color="#3A2A18"/>
+      <stop offset="100%" stop-color="#2A1A0A"/>
+    </linearGradient>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#DAA520"/>
+      <stop offset="50%" stop-color="#B8860B"/>
+      <stop offset="100%" stop-color="#8B6914"/>
+    </linearGradient>
+  </defs>
+  <!-- Thick outer stone border -->
+  <rect x="2" y="2" width="376" height="516" rx="8" fill="none" stroke="#2A1A0A" stroke-width="10"/>
+  <!-- Stone frame body -->
+  <rect x="7" y="7" width="366" height="506" rx="5" fill="none" stroke="url(#ornateGrad)" stroke-width="4"/>
+  <!-- Gold inlay line -->
+  <rect x="11" y="11" width="358" height="498" rx="4" fill="none" stroke="url(#goldGrad)" stroke-width="1.5"/>
+  <!-- Corner ornamental fleur/cross -->
+  <g stroke="url(#goldGrad)" stroke-width="1.2" fill="none" opacity="0.7">
+    <!-- Top-left corner -->
+    <path d="M14 14 L14 30"/>
+    <path d="M14 14 L30 14"/>
+    <path d="M14 14 L22 22"/>
+    <circle cx="22" cy="22" r="3"/>
+    <!-- Top-right corner -->
+    <path d="M366 14 L366 30"/>
+    <path d="M366 14 L350 14"/>
+    <path d="M366 14 L358 22"/>
+    <circle cx="358" cy="22" r="3"/>
+    <!-- Bottom-left corner -->
+    <path d="M14 506 L14 490"/>
+    <path d="M14 506 L30 506"/>
+    <path d="M14 506 L22 498"/>
+    <circle cx="22" cy="498" r="3"/>
+    <!-- Bottom-right corner -->
+    <path d="M366 506 L366 490"/>
+    <path d="M366 506 L350 506"/>
+    <path d="M366 506 L358 498"/>
+    <circle cx="358" cy="498" r="3"/>
+  </g>
+  <!-- Mid-edge ornaments -->
+  <g stroke="url(#goldGrad)" stroke-width="1" fill="none" opacity="0.5">
+    <path d="M190 8 L190 18"/>
+    <path d="M186 13 L194 13"/>
+    <path d="M190 502 L190 512"/>
+    <path d="M186 507 L194 507"/>
+    <path d="M8 260 L18 260"/>
+    <path d="M13 256 L13 264"/>
+    <path d="M362 260 L372 260"/>
+    <path d="M367 256 L367 264"/>
+  </g>
+</svg>

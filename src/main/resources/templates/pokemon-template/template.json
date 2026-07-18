@@ -1,6 +1,6 @@
 {
   "id": "pokemon-template",
-  "name": "Monster Dex",
+  "name": "宝可梦图鉴",
   "description": "经典角色图鉴卡片，支持性格主题自动切换",
   "author": "GameCard Team",
   "version": "1.0.0",

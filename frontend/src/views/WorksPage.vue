@@ -8,10 +8,8 @@
 import { ref, computed, onMounted, nextTick } from 'vue'
 import { useCardStore } from '@/stores/card'
 import { useWorksStore } from '@/stores/works'
-import { resolveTheme } from '@/utils/themeResolver'
-import type { ResolvedTheme } from '@/utils/themeResolver'
 import type { SavedWork } from '@/types'
-import CardRenderer from '@/components/card/CardRenderer.vue'
+import TemplateRenderer from '@/renderer/TemplateRenderer.vue'
 import { useCardExport } from '@/export'
 import EmptyState from '@/components/common/EmptyState.vue'
 
@@ -52,7 +50,7 @@ function openExport(work: SavedWork) {
   isExporting.value = false
   exportSuccess.value = false
 
-  // 等待 CardRenderer 渲染完成
+  // 等待模板渲染完成
   nextTick(() => nextTick(() => {
     // 等待子组件和字体加载
     setTimeout(() => {
@@ -73,7 +71,7 @@ async function handleExport() {
 
   isExporting.value = true
 
-  // 模态窗口中 CardRenderer 的 .game-card
+  // 模态窗口中模板的 .game-card
   const el = document.querySelector<HTMLElement>('.works-export-modal .game-card')
   if (!el) {
     alert('无法找到卡片元素，请重试')
@@ -89,54 +87,9 @@ async function handleExport() {
   }, 1500)
 }
 
-// ── 模板 / 主题工具函数 ──
+// ── 模板工具函数 ──
 function getTemplateForWork(work: SavedWork) {
   return cardStore.templates.find(t => t.id === work.templateId) ?? null
-}
-
-function getThemeForWork(work: SavedWork): ResolvedTheme {
-  const tpl = getTemplateForWork(work)
-  return tpl ? resolveTheme(tpl, work.cardData) : emptyTheme
-}
-
-/** 空主题兜底（模板不存在时的 fallback） */
-const emptyTheme: ResolvedTheme = {
-  mapping: null,
-  color: '#6366F1',
-  secondaryColor: '#4F46E5',
-  icon: '',
-  background: '',
-  cssVars: {
-    '--card-primary': '#6366F1',
-    '--card-secondary': '#4F46E5',
-    '--card-gradient-start': '#818CF8',
-    '--card-gradient-end': '#4F46E5',
-    '--card-glow': 'rgba(99, 102, 241, 0.3)',
-    '--card-background': '#1F2937',
-  },
-}
-
-function getImageStyle(config: SavedWork['imageConfig']) {
-  const s: Record<string, string> = {}
-  if (!config?.applied) return s
-  if (config.crop) {
-    const t = config.crop.y
-    const r = 1 - config.crop.x - config.crop.width
-    const b = 1 - config.crop.y - config.crop.height
-    const l = config.crop.x
-    s['clipPath'] = `inset(${t * 100}% ${r * 100}% ${b * 100}% ${l * 100}%)`
-    return s
-  }
-  if (config.shape === 'circle') s['clipPath'] = 'circle(50%)'
-  else if (config.shape === 'rounded') s['borderRadius'] = '12px'
-  else s['borderRadius'] = '0'
-  return s
-}
-
-function getImageTransform(config: SavedWork['imageConfig']): Record<string, string> | undefined {
-  if (!config?.applied) return undefined
-  if (config.scale === 1 && config.position.x === 0 && config.position.y === 0) return undefined
-  return { transform: `translate(${config.position.x}px, ${config.position.y}px) scale(${config.scale})` }
 }
 
 function formatDate(iso: string): string {
@@ -225,14 +178,12 @@ function formatDate(iso: string): string {
           <div class="works-export-modal__inner">
             <!-- Card preview -->
             <div class="works-export-modal__card">
-              <CardRenderer
+              <TemplateRenderer
                 v-if="exportWork"
                 :template="getTemplateForWork(exportWork)"
                 :card-data="exportWork.cardData"
-                :theme="getThemeForWork(exportWork)"
                 :image-url="exportWork.imageData"
-                :image-style="getImageStyle(exportWork.imageConfig)"
-                :image-transform="getImageTransform(exportWork.imageConfig)"
+                :image-config="exportWork.imageConfig"
               />
             </div>
 
@@ -418,9 +369,8 @@ function formatDate(iso: string): string {
 }
 
 .works-export-modal__card {
-  width: 1280px;
-  height: 720px;
-  flex-shrink: 0;
+  max-width: 90vw;
+  max-height: 80vh;
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);

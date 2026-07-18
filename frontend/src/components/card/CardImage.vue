@@ -1,32 +1,48 @@
 <script setup lang="ts">
 /**
- * CardImage - 卡片图片组件
+ * CardImage - 通用卡片图片组件（可选的通用积木）
  *
- * 基于 pokemon.css 的角色展示区：
- * - 居中底部展示
- * - drop-shadow 投影效果
- * - 320px 宽
+ * 默认使用底部居中定位（兼容现有 Pokemon 布局），
+ * 模板可通过 containerClass 覆盖定位，或通过 imageWidth 控制尺寸。
  */
 defineProps<{
   image: string | null
   name: string
   imgStyle?: Record<string, string>
+  /** 自定义容器 CSS class（覆盖默认 absolute 定位） */
+  containerClass?: string
+  /** 图片宽度（默认 '280px'） */
+  imageWidth?: string
+  /** 是否显示空状态占位（默认 true） */
+  showPlaceholder?: boolean
 }>()
 </script>
 
 <template>
   <!-- 有图片时 -->
-  <div v-if="image" class="character-area">
+  <div
+    v-if="image"
+    class="character-area"
+    :class="containerClass"
+  >
     <img
       :src="image"
       :alt="name || '角色图片'"
       class="character-image"
-      :style="imgStyle"
+      :class="{ 'has-custom-width': !!imageWidth }"
+      :style="{
+        ...(imageWidth ? { width: imageWidth } : {}),
+        ...imgStyle,
+      }"
     />
   </div>
 
   <!-- 无图片时：空状态占位 -->
-  <div v-else class="character-area character-area--empty">
+  <div
+    v-else-if="showPlaceholder !== false"
+    class="character-area character-area--empty"
+    :class="containerClass"
+  >
     <div class="character-placeholder">
       <svg class="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
@@ -51,6 +67,10 @@ defineProps<{
   height: auto;
   object-fit: contain;
   filter: drop-shadow(0 12px 20px rgba(0, 0, 0, 0.5));
+}
+
+.character-image.has-custom-width {
+  height: auto;
 }
 
 .character-area--empty {

@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 900">
+  <defs>
+    <radialGradient id="glow" cx="50%" cy="40%" r="65%">
+      <stop offset="0%" stop-color="#C71585" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#8B0A50" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2A1822"/>
+      <stop offset="50%" stop-color="#1E1018"/>
+      <stop offset="100%" stop-color="#140810"/>
+    </linearGradient>
+    <linearGradient id="stone" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3A2030" stop-opacity="0.2"/>
+      <stop offset="50%" stop-color="#2A1822" stop-opacity="0.1"/>
+      <stop offset="100%" stop-color="#1A0810" stop-opacity="0.2"/>
+    </linearGradient>
+  </defs>
+  <rect width="600" height="900" fill="url(#bg)"/>
+  <rect width="600" height="900" fill="url(#stone)"/>
+  <circle cx="300" cy="350" r="300" fill="url(#glow)"/>
+  <!-- Chaotic energy border -->
+  <path d="M0,0 Q150,60 300,10 Q450,60 600,0 L600,80 Q450,130 300,80 Q150,130 0,80Z" fill="#C71585" fill-opacity="0.08"/>
+  <path d="M0,820 Q150,770 300,820 Q450,770 600,820 L600,900 L0,900Z" fill="#C71585" fill-opacity="0.06"/>
+  <!-- Dragon scale pattern -->
+  <path d="M200,200 Q250,250 300,200 Q350,250 400,200" fill="none" stroke="#C71585" stroke-width="1.5" stroke-opacity="0.1"/>
+  <path d="M200,240 Q250,290 300,240 Q350,290 400,240" fill="none" stroke="#C71585" stroke-width="1.5" stroke-opacity="0.08"/>
+  <path d="M200,280 Q250,330 300,280 Q350,330 400,280" fill="none" stroke="#C71585" stroke-width="1.5" stroke-opacity="0.06"/>
+  <!-- Energy tendrils -->
+  <path d="M100,500 Q200,400 150,300" fill="none" stroke="#C71585" stroke-width="2" stroke-opacity="0.07"/>
+  <path d="M500,550 Q400,450 450,350" fill="none" stroke="#C71585" stroke-width="2" stroke-opacity="0.07"/>
+  <path d="M250,700 Q300,600 350,700" fill="none" stroke="#C71585" stroke-width="1.5" stroke-opacity="0.06"/>
+  <!-- Chaos stars -->
+  <polygon points="150,600 155,615 170,615 158,625 162,640 150,630 138,640 142,625 130,615 145,615" fill="#C71585" fill-opacity="0.06"/>
+  <polygon points="450,650 455,665 470,665 458,675 462,690 450,680 438,690 442,675 430,665 445,665" fill="#C71585" fill-opacity="0.05"/>
+  <!-- Stone texture -->
+  <circle cx="90" cy="170" r="3" fill="#3A2030" fill-opacity="0.2"/>
+  <circle cx="510" cy="210" r="4" fill="#3A2030" fill-opacity="0.15"/>
+  <circle cx="480" cy="780" r="3" fill="#3A2030" fill-opacity="0.2"/>
+  <circle cx="120" cy="750" r="4" fill="#3A2030" fill-opacity="0.12"/>
+  <circle cx="320" cy="400" r="2" fill="#C71585" fill-opacity="0.08"/>
+  <circle cx="200" cy="480" r="3" fill="#C71585" fill-opacity="0.06"/>
+</svg>

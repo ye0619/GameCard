@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 900">
+  <defs>
+    <radialGradient id="glow" cx="50%" cy="40%" r="65%">
+      <stop offset="0%" stop-color="#008B8B" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#006060" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#162828"/>
+      <stop offset="50%" stop-color="#0E1E1E"/>
+      <stop offset="100%" stop-color="#081414"/>
+    </linearGradient>
+    <linearGradient id="stone" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#203232" stop-opacity="0.2"/>
+      <stop offset="50%" stop-color="#162828" stop-opacity="0.1"/>
+      <stop offset="100%" stop-color="#081818" stop-opacity="0.2"/>
+    </linearGradient>
+  </defs>
+  <rect width="600" height="900" fill="url(#bg)"/>
+  <rect width="600" height="900" fill="url(#stone)"/>
+  <circle cx="300" cy="350" r="300" fill="url(#glow)"/>
+  <!-- Zen circle border -->
+  <path d="M0,0 Q150,50 300,0 Q450,50 600,0 L600,80 Q450,120 300,80 Q150,120 0,80Z" fill="#008B8B" fill-opacity="0.08"/>
+  <path d="M0,820 Q150,780 300,820 Q450,780 600,820 L600,900 L0,900Z" fill="#008B8B" fill-opacity="0.06"/>
+  <!-- Enso circle (zen circle) -->
+  <circle cx="300" cy="450" r="100" fill="none" stroke="#008B8B" stroke-width="2" stroke-opacity="0.1"/>
+  <path d="M300,350 A100,100 0 0,1 300,550" fill="none" stroke="#008B8B" stroke-width="1.5" stroke-opacity="0.08"/>
+  <!-- Energy lines -->
+  <path d="M200,200 L250,280" stroke="#008B8B" stroke-width="2" stroke-opacity="0.08"/>
+  <path d="M400,200 L350,280" stroke="#008B8B" stroke-width="2" stroke-opacity="0.08"/>
+  <path d="M180,350 L260,350" stroke="#008B8B" stroke-width="2" stroke-opacity="0.08"/>
+  <path d="M420,350 L340,350" stroke="#008B8B" stroke-width="2" stroke-opacity="0.08"/>
+  <!-- Stone texture -->
+  <circle cx="100" cy="160" r="3" fill="#203232" fill-opacity="0.2"/>
+  <circle cx="500" cy="190" r="4" fill="#203232" fill-opacity="0.15"/>
+  <circle cx="470" cy="740" r="3" fill="#203232" fill-opacity="0.2"/>
+  <circle cx="130" cy="710" r="4" fill="#203232" fill-opacity="0.12"/>
+  <circle cx="250" cy="500" r="2" fill="#008B8B" fill-opacity="0.08"/>
+  <circle cx="350" cy="530" r="3" fill="#008B8B" fill-opacity="0.06"/>
+</svg>

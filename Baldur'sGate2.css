@@ -1,0 +1,730 @@
+/* =====================================
+   Classic RPG Character Sheet
+   Baldur Style
+   CharacterSheetTemplate
+   │
+   ├── Frame (石质边框)
+   ├── LeftToolbar (装备栏)
+   ├── AttributePanel (属性)
+   ├── PortraitPanel (头像)
+   ├── DetailPanel (角色信息)
+   ├── BottomActions (操作按钮)
+   └── BackgroundTexture
+===================================== */
+
+
+.character-sheet {
+
+
+    position:relative;
+
+
+    width:900px;
+
+    height:700px;
+
+
+
+    overflow:hidden;
+
+
+
+    font-family:
+
+    "Times New Roman",
+
+    "Microsoft YaHei";
+
+
+
+    color:#d8c49a;
+
+
+
+    background:
+
+
+    linear-gradient(
+
+        rgba(20,15,10,.75),
+
+        rgba(20,15,10,.85)
+
+    ),
+
+    url("./stone-texture.jpg");
+
+
+
+    border:
+
+    18px solid #3a2a1b;
+
+
+
+    box-shadow:
+
+
+    inset 0 0 40px #000,
+
+    0 0 30px #000;
+
+
+
+}
+
+
+
+/* =====================================
+   Outer Ancient Frame
+===================================== */
+
+
+.character-sheet::before{
+
+
+content:"";
+
+
+position:absolute;
+
+
+inset:5px;
+
+
+border:
+
+2px solid #9b8050;
+
+
+
+pointer-events:none;
+
+
+}
+
+
+
+/* =====================================
+   Left Equipment Toolbar
+===================================== */
+
+
+.toolbar{
+
+
+position:absolute;
+
+
+left:20px;
+
+top:40px;
+
+
+width:70px;
+
+
+height:600px;
+
+
+}
+
+
+
+.tool-slot{
+
+
+width:55px;
+
+height:55px;
+
+
+margin-bottom:12px;
+
+
+
+background:
+
+
+linear-gradient(
+
+145deg,
+
+#5a4a36,
+
+#21170d
+
+);
+
+
+
+border:
+
+2px solid #806944;
+
+
+
+box-shadow:
+
+
+inset 0 0 10px black;
+
+
+
+display:flex;
+
+
+align-items:center;
+
+
+justify-content:center;
+
+
+}
+
+
+
+
+.tool-slot img{
+
+
+width:40px;
+
+height:40px;
+
+
+}
+
+
+
+/* =====================================
+   Main Content
+===================================== */
+
+
+.content{
+
+
+position:absolute;
+
+
+left:110px;
+
+
+right:25px;
+
+
+top:35px;
+
+
+bottom:35px;
+
+
+display:grid;
+
+
+grid-template-columns:
+
+
+260px 260px 260px;
+
+
+
+gap:10px;
+
+
+}
+
+
+
+/* =====================================
+   Title
+===================================== */
+
+
+.title{
+
+
+grid-column:
+
+1 / 4;
+
+
+height:45px;
+
+
+
+text-align:center;
+
+
+
+font-size:26px;
+
+
+
+letter-spacing:8px;
+
+
+
+font-weight:bold;
+
+
+
+color:#c8aa70;
+
+
+
+border-bottom:
+
+
+2px solid #73552e;
+
+
+
+}
+
+
+
+
+
+/* =====================================
+   Attribute Panel
+===================================== */
+
+
+.attributes{
+
+
+background:
+
+
+rgba(20,15,10,.75);
+
+
+
+border:
+
+3px solid #705331;
+
+
+
+padding:20px;
+
+
+
+}
+
+
+
+.attribute-row{
+
+
+display:flex;
+
+
+justify-content:space-between;
+
+
+
+margin-bottom:15px;
+
+
+
+font-size:20px;
+
+
+
+}
+
+
+.attribute-name{
+
+
+color:#d4c29a;
+
+
+}
+
+
+
+.attribute-value{
+
+
+color:#e54b35;
+
+
+font-weight:bold;
+
+
+}
+
+
+
+/* =====================================
+   Portrait Area
+===================================== */
+
+
+.portrait-panel{
+
+
+background:
+
+
+rgba(30,20,10,.8);
+
+
+
+border:
+
+3px solid #83613a;
+
+
+
+padding:10px;
+
+
+
+text-align:center;
+
+
+
+}
+
+
+
+.portrait{
+
+
+width:220px;
+
+
+height:300px;
+
+
+
+object-fit:cover;
+
+
+
+border:
+
+
+5px solid #7c623e;
+
+
+
+}
+
+
+
+
+.race{
+
+
+margin-top:10px;
+
+
+font-size:18px;
+
+
+color:#e1c58b;
+
+
+}
+
+
+
+/* =====================================
+   Information Panel
+===================================== */
+
+
+.info-panel{
+
+
+background:
+
+
+rgba(20,15,10,.8);
+
+
+
+border:
+
+3px solid #705331;
+
+
+padding:15px;
+
+
+
+font-size:17px;
+
+
+
+line-height:1.6;
+
+
+
+}
+
+
+
+.info-title{
+
+
+font-size:22px;
+
+
+color:#e6c878;
+
+
+
+border-bottom:
+
+1px solid #705331;
+
+
+}
+
+
+
+/* =====================================
+   Ability List
+===================================== */
+
+
+.ability{
+
+
+display:flex;
+
+
+
+align-items:center;
+
+
+
+margin:8px 0;
+
+
+
+}
+
+
+
+.ability::before{
+
+
+content:"◆";
+
+
+margin-right:8px;
+
+
+
+color:#c69c45;
+
+
+}
+
+
+
+/* =====================================
+   Bottom Status
+===================================== */
+
+
+.status-panel{
+
+
+position:absolute;
+
+
+
+bottom:80px;
+
+
+
+left:110px;
+
+
+
+right:25px;
+
+
+
+height:90px;
+
+
+
+display:flex;
+
+
+
+justify-content:center;
+
+
+
+gap:20px;
+
+
+}
+
+
+
+.status-box{
+
+
+width:150px;
+
+
+
+background:
+
+
+rgba(20,15,10,.8);
+
+
+
+border:
+
+2px solid #80613a;
+
+
+
+text-align:center;
+
+
+
+padding:10px;
+
+
+
+}
+
+
+
+.status-number{
+
+
+font-size:30px;
+
+
+color:#eee;
+
+
+}
+
+
+
+/* =====================================
+   Action Buttons
+===================================== */
+
+
+.action-bar{
+
+
+position:absolute;
+
+
+bottom:20px;
+
+
+left:110px;
+
+
+right:25px;
+
+
+display:flex;
+
+
+gap:15px;
+
+
+}
+
+
+
+.action-button{
+
+
+flex:1;
+
+
+height:40px;
+
+
+
+background:
+
+
+linear-gradient(
+
+#665038,
+
+#24180d
+
+);
+
+
+
+border:
+
+
+2px solid #94764a;
+
+
+
+color:#d6c08b;
+
+
+
+font-size:18px;
+
+
+
+font-weight:bold;
+
+
+
+cursor:pointer;
+
+
+}
+
+
+
+.action-button:hover{
+
+
+background:
+
+#80603b;
+
+
+}
+
+
+
+/* =====================================
+   Gold Highlight
+===================================== */
+
+
+.highlight{
+
+
+color:#e8c86b;
+
+
+text-shadow:
+
+
+0 0 5px #c18b35;
+
+
+}

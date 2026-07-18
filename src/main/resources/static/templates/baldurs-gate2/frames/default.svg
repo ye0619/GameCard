@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 380 520">
+  <!-- Stone block frame -->
+  <rect x="2" y="2" width="376" height="516" rx="4" fill="none" stroke="#3A2A1B" stroke-width="6"/>
+  <!-- Inner stone border -->
+  <rect x="8" y="8" width="364" height="504" rx="2" fill="none" stroke="#5A4A36" stroke-width="2"/>
+  <!-- Corner stone joints -->
+  <line x1="2" y1="130" x2="7" y2="130" stroke="#2A1A0B" stroke-width="1.5"/>
+  <line x1="373" y1="130" x2="378" y2="130" stroke="#2A1A0B" stroke-width="1.5"/>
+  <line x1="2" y1="260" x2="7" y2="260" stroke="#2A1A0B" stroke-width="1.5"/>
+  <line x1="373" y1="260" x2="378" y2="260" stroke="#2A1A0B" stroke-width="1.5"/>
+  <line x1="2" y1="390" x2="7" y2="390" stroke="#2A1A0B" stroke-width="1.5"/>
+  <line x1="373" y1="390" x2="378" y2="390" stroke="#2A1A0B" stroke-width="1.5"/>
+  <line x1="127" y1="2" x2="127" y2="7" stroke="#2A1A0B" stroke-width="1.5"/>
+  <line x1="253" y1="2" x2="253" y2="7" stroke="#2A1A0B" stroke-width="1.5"/>
+  <line x1="127" y1="513" x2="127" y2="518" stroke="#2A1A0B" stroke-width="1.5"/>
+  <line x1="253" y1="513" x2="253" y2="518" stroke="#2A1A0B" stroke-width="1.5"/>
+  <!-- Subtle stone texture lines -->
+  <line x1="60" y1="2" x2="60" y2="5" stroke="#4A3A26" stroke-width="0.5" stroke-opacity="0.4"/>
+  <line x1="190" y1="2" x2="190" y2="5" stroke="#4A3A26" stroke-width="0.5" stroke-opacity="0.4"/>
+  <line x1="320" y1="2" x2="320" y2="5" stroke="#4A3A26" stroke-width="0.5" stroke-opacity="0.4"/>
+  <line x1="60" y1="515" x2="60" y2="518" stroke="#4A3A26" stroke-width="0.5" stroke-opacity="0.4"/>
+  <line x1="190" y1="515" x2="190" y2="518" stroke="#4A3A26" stroke-width="0.5" stroke-opacity="0.4"/>
+  <line x1="320" y1="515" x2="320" y2="518" stroke="#4A3A26" stroke-width="0.5" stroke-opacity="0.4"/>
+</svg>

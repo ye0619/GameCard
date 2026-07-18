@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none">
+  <!-- Shield -->
+  <path d="M24 4 L42 14 L42 28 Q42 38 24 46 Q6 38 6 28 L6 14 L24 4Z" fill="#9AC0CD" stroke="#7A9BAE" stroke-width="1.5"/>
+  <!-- Cross on shield -->
+  <line x1="24" y1="14" x2="24" y2="34" stroke="#7A9BAE" stroke-width="2.5"/>
+  <line x1="14" y1="24" x2="34" y2="24" stroke="#7A9BAE" stroke-width="2.5"/>
+  <!-- Shield highlight -->
+  <path d="M24 8 L38 16 L38 26 Q38 34 24 42" fill="none" stroke="#B0D4E3" stroke-width="0.8" stroke-opacity="0.4"/>
+  <!-- Center circle -->
+  <circle cx="24" cy="24" r="4" fill="#B0D4E3" fill-opacity="0.3" stroke="#7A9BAE" stroke-width="0.8"/>
+</svg>

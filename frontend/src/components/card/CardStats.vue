@@ -16,7 +16,14 @@ const props = defineProps<{
   theme: ResolvedTheme
   stats: Record<string, number>
   statFields: TemplateField[]
+  /** 强制显示雷达图（默认：恰好 6 项时自动显示） */
+  showRadar?: boolean
+  /** 数值最大值刻度（默认 100） */
+  maxValue?: number
 }>()
+
+/** 归一化到 0-1 */
+const normalized = (v: number, max: number) => Math.min(v / max, 1)
 
 /** 前 6 项属性（雷达图最多支持 6 项） */
 const displayFields = computed(() => props.statFields.slice(0, 6))
@@ -25,6 +32,13 @@ const displayFields = computed(() => props.statFields.slice(0, 6))
 const hasStats = computed(() =>
   displayFields.value.some(s => props.stats[s.key] != null && props.stats[s.key] > 0),
 )
+
+/** 是否显示雷达图 */
+const showRadarChart = computed(() => {
+  if (props.showRadar === false) return false          // 显式禁用
+  if (props.showRadar === true) return true             // 显式启用
+  return displayFields.value.length === 6                // 默认：恰好 6 项时显示
+})
 
 /** 雷达图参数 */
 const CX = 210
@@ -44,12 +58,14 @@ function hexPoints(cx: number, cy: number, r: number): string {
   }).join(' ')
 }
 
-/** 数据多边形（归一化到 0-100） */
+/** 数据多边形（归一化到 0-1） */
+const maxVal = computed(() => props.maxValue ?? 100)
+
 const dataPolygon = computed(() => {
   if (displayFields.value.length < 6) return ''
   const values = displayFields.value.map(s => {
     const v = props.stats[s.key] ?? 0
-    return Math.min(v / 100, 1)
+    return normalized(v, maxVal.value)
   })
   return values.map((v, i) => {
     const angle = (Math.PI / 3) * i - Math.PI / 2
@@ -66,7 +82,8 @@ const labelPositions = computed(() => {
     const offset = RADIUS + 28
     const x = CX + offset * Math.cos(angle)
     const y = CY + offset * Math.sin(angle)
-    const val = props.stats[field.key] ?? 0
+    const raw = props.stats[field.key] ?? 0
+    const val = Math.min(raw, maxVal.value)
     // 数值位置（沿半径向内偏移）
     const vOffset = 30
     const vx = CX + vOffset * Math.cos(angle)
@@ -77,7 +94,7 @@ const labelPositions = computed(() => {
 </script>
 
 <template>
-  <div v-if="hasStats && displayFields.length === 6">
+  <div v-if="hasStats && showRadarChart">
     <svg
       class="radar-svg"
       viewBox="0 0 420 420"

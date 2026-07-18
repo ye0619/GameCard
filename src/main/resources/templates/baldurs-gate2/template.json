@@ -1,0 +1,388 @@
+{
+  "id": "baldurs-gate2",
+  "name": "博德之门 - 角色卡",
+  "description": "基于博德之门2风格的 D&D 角色卡片模板。选择职业自动切换对应的石纹主题色，支持六维属性雷达图、技能/法术列表和角色背景故事。",
+  "author": "GameCard Team",
+  "version": "1.0.0",
+  "previewImage": "",
+  "tags": ["经典", "西式", "RPG", "D&D", "博德之门", "魔幻"],
+  "size": {
+    "width": 900,
+    "height": 700
+  },
+  "themeField": "nature",
+  "statFields": ["strength", "dexterity", "constitution", "intelligence", "wisdom", "charisma"],
+  "themeMapping": {
+    "战士": {
+      "background": "bg-fighter",
+      "color": "#B22222",
+      "icon": "class-fighter",
+      "secondaryColor": "#8B0000",
+      "styles": {
+        "gradient-start": "#CD5C5C",
+        "gradient-end": "#8B0000",
+        "glow-color": "rgba(178, 34, 34, 0.3)"
+      }
+    },
+    "法师": {
+      "background": "bg-mage",
+      "color": "#4169E1",
+      "icon": "class-mage",
+      "secondaryColor": "#1E3A8A",
+      "styles": {
+        "gradient-start": "#6B8DE3",
+        "gradient-end": "#1E3A8A",
+        "glow-color": "rgba(65, 105, 225, 0.3)"
+      }
+    },
+    "牧师": {
+      "background": "bg-cleric",
+      "color": "#DAA520",
+      "icon": "class-cleric",
+      "secondaryColor": "#B8860B",
+      "styles": {
+        "gradient-start": "#EEC900",
+        "gradient-end": "#B8860B",
+        "glow-color": "rgba(218, 165, 32, 0.3)"
+      }
+    },
+    "盗贼": {
+      "background": "bg-thief",
+      "color": "#4A4A4A",
+      "icon": "class-thief",
+      "secondaryColor": "#2F2F2F",
+      "styles": {
+        "gradient-start": "#6B6B6B",
+        "gradient-end": "#2F2F2F",
+        "glow-color": "rgba(74, 74, 74, 0.3)"
+      }
+    },
+    "游侠": {
+      "background": "bg-ranger",
+      "color": "#228B22",
+      "icon": "class-ranger",
+      "secondaryColor": "#1B5E20",
+      "styles": {
+        "gradient-start": "#4CAF50",
+        "gradient-end": "#1B5E20",
+        "glow-color": "rgba(34, 139, 34, 0.3)"
+      }
+    },
+    "圣骑士": {
+      "background": "bg-paladin",
+      "color": "#9AC0CD",
+      "icon": "class-paladin",
+      "secondaryColor": "#7A9BAE",
+      "styles": {
+        "gradient-start": "#B0D4E3",
+        "gradient-end": "#7A9BAE",
+        "glow-color": "rgba(154, 192, 205, 0.3)"
+      }
+    },
+    "德鲁伊": {
+      "background": "bg-druid",
+      "color": "#8B4513",
+      "icon": "class-druid",
+      "secondaryColor": "#5C2E00",
+      "styles": {
+        "gradient-start": "#A0522D",
+        "gradient-end": "#5C2E00",
+        "glow-color": "rgba(139, 69, 19, 0.3)"
+      }
+    },
+    "吟游诗人": {
+      "background": "bg-bard",
+      "color": "#8B008B",
+      "icon": "class-bard",
+      "secondaryColor": "#5B005B",
+      "styles": {
+        "gradient-start": "#AB30AB",
+        "gradient-end": "#5B005B",
+        "glow-color": "rgba(139, 0, 139, 0.3)"
+      }
+    },
+    "武僧": {
+      "background": "bg-monk",
+      "color": "#008B8B",
+      "icon": "class-monk",
+      "secondaryColor": "#006060",
+      "styles": {
+        "gradient-start": "#20B2AA",
+        "gradient-end": "#006060",
+        "glow-color": "rgba(0, 139, 139, 0.3)"
+      }
+    },
+    "术士": {
+      "background": "bg-sorcerer",
+      "color": "#C71585",
+      "icon": "class-sorcerer",
+      "secondaryColor": "#8B0A50",
+      "styles": {
+        "gradient-start": "#DB5DA6",
+        "gradient-end": "#8B0A50",
+        "glow-color": "rgba(199, 21, 133, 0.3)"
+      }
+    }
+  },
+  "fields": [
+    {
+      "key": "name",
+      "label": "角色名",
+      "type": "TEXT",
+      "required": true,
+      "placeholder": "如：查内姆"
+    },
+    {
+      "key": "nature",
+      "label": "职业",
+      "type": "ENUM",
+      "required": true,
+      "defaultValue": "战士",
+      "options": "[\"战士\",\"法师\",\"牧师\",\"盗贼\",\"游侠\",\"圣骑士\",\"德鲁伊\",\"吟游诗人\",\"武僧\",\"术士\"]"
+    },
+    {
+      "key": "race",
+      "label": "种族",
+      "type": "SELECT",
+      "required": false,
+      "defaultValue": "人类",
+      "placeholder": "选择种族",
+      "options": "[\"人类\",\"精灵\",\"矮人\",\"半精灵\",\"侏儒\",\"半兽人\",\"地精\"]"
+    },
+    {
+      "key": "age",
+      "label": "等级",
+      "type": "NUMBER",
+      "required": false,
+      "defaultValue": "1",
+      "placeholder": "角色等级"
+    },
+    {
+      "key": "hp",
+      "label": "生命值",
+      "type": "NUMBER",
+      "required": false,
+      "defaultValue": "80",
+      "placeholder": "HP"
+    },
+    {
+      "key": "ac",
+      "label": "护甲等级",
+      "type": "NUMBER",
+      "required": false,
+      "defaultValue": "10",
+      "placeholder": "AC"
+    },
+    {
+      "key": "strength",
+      "label": "力量",
+      "type": "NUMBER",
+      "required": false,
+      "defaultValue": "80",
+      "placeholder": "STR"
+    },
+    {
+      "key": "dexterity",
+      "label": "敏捷",
+      "type": "NUMBER",
+      "required": false,
+      "defaultValue": "60",
+      "placeholder": "DEX"
+    },
+    {
+      "key": "constitution",
+      "label": "体质",
+      "type": "NUMBER",
+      "required": false,
+      "defaultValue": "70",
+      "placeholder": "CON"
+    },
+    {
+      "key": "intelligence",
+      "label": "智力",
+      "type": "NUMBER",
+      "required": false,
+      "defaultValue": "50",
+      "placeholder": "INT"
+    },
+    {
+      "key": "wisdom",
+      "label": "感知",
+      "type": "NUMBER",
+      "required": false,
+      "defaultValue": "55",
+      "placeholder": "WIS"
+    },
+    {
+      "key": "charisma",
+      "label": "魅力",
+      "type": "NUMBER",
+      "required": false,
+      "defaultValue": "65",
+      "placeholder": "CHA"
+    },
+    {
+      "key": "skills",
+      "label": "能力/法术",
+      "type": "ARRAY",
+      "required": false,
+      "fields": [
+        {
+          "key": "name",
+          "label": "名称",
+          "type": "TEXT",
+          "required": true,
+          "placeholder": "如：火球术"
+        }
+      ]
+    },
+    {
+      "key": "description",
+      "label": "背景故事",
+      "type": "TEXTAREA",
+      "required": false,
+      "placeholder": "描述你的角色背景故事..."
+    },
+    {
+      "key": "image",
+      "label": "角色肖像",
+      "type": "IMAGE",
+      "required": true
+    }
+  ],
+  "presetSkills": [
+    { "name": "武器大师", "category": "攻击", "description": "精通各类武器，攻击命中率和伤害大幅提升", "power": 85 },
+    { "name": "猛力攻击", "category": "攻击", "description": "倾尽全力的一击，造成双倍伤害但命中率降低", "power": 80 },
+    { "name": "旋风攻击", "category": "攻击", "description": "快速旋转身体攻击周围所有敌人", "power": 75 },
+    { "name": "致命一击", "category": "攻击", "description": "寻找敌人破绽发动致命打击，有概率即死效果", "power": 90 },
+    { "name": "魔法飞弹", "category": "攻击", "description": "释放三枚魔法飞弹自动追踪目标，必中型法术", "power": 65 },
+    { "name": "火球术", "category": "攻击", "description": "召唤炽热的火球在目标区域爆炸，范围伤害", "power": 85 },
+    { "name": "闪电术", "category": "攻击", "description": "召唤闪电链攻击主要目标并跳跃至附近敌人", "power": 80 },
+    { "name": "冰风暴", "category": "攻击", "description": "召唤暴风雪覆盖目标区域，造成伤害并减速", "power": 78 },
+    { "name": "死亡一指", "category": "攻击", "description": "传递死亡能量，弱小目标立即死亡", "power": 95 },
+    { "name": "酸液箭", "category": "攻击", "description": "射出酸液凝聚的箭矢，腐蚀目标的护甲", "power": 70 },
+    { "name": "连环闪电", "category": "攻击", "description": "释放强力连锁闪电，在所有敌人间跳跃", "power": 88 },
+    { "name": "圣光打击", "category": "攻击", "description": "灌注神圣力量的攻击，对不死生物造成额外伤害", "power": 82 },
+    { "name": "铁壁防御", "category": "防御", "description": "进入完全防御姿态，大幅提升物理防御力", "power": 55 },
+    { "name": "石肤术", "category": "防御", "description": "在皮肤表面形成岩石护甲，吸收物理伤害", "power": 60 },
+    { "name": "镜影术", "category": "防御", "description": "创造多重幻影分身，使攻击难以命中本体", "power": 50 },
+    { "name": "法术免疫", "category": "防御", "description": "暂时免疫一定等级以下的法术效果", "power": 65 },
+    { "name": "圣盾术", "category": "防御", "description": "召唤神圣能量护盾，吸收所有类型的伤害", "power": 70 },
+    { "name": "防护元素", "category": "防御", "description": "获得对火焰、寒冷、闪电的元素抗性", "power": 45 },
+    { "name": "治疗术", "category": "辅助", "description": "引导正能量恢复目标的生命值", "power": 55 },
+    { "name": "驱散魔法", "category": "辅助", "description": "解除目标身上的法术效果，包括有益和有害的", "power": 40 },
+    { "name": "解除陷阱", "category": "辅助", "description": "发现并解除陷阱和锁定的机关", "power": 35 },
+    { "name": "侦测隐身", "category": "辅助", "description": "揭示附近所有隐形生物和物体", "power": 30 },
+    { "name": "强化武器", "category": "辅助", "description": "临时为武器附魔，提升攻击力和命中", "power": 45 },
+    { "name": "鼓舞士气", "category": "辅助", "description": "发出振奋人心的呐喊，提升全队战斗力", "power": 40 },
+    { "name": "敲击术", "category": "辅助", "description": "打开被魔法锁定的门或箱子", "power": 25 },
+    { "name": "变形术", "category": "特殊", "description": "将目标变成无害的小动物，持续一段时间", "power": 75 },
+    { "name": "亡灵归亡", "category": "特殊", "description": "驱散或摧毁不死生物，对低级亡灵直接消灭", "power": 80 },
+    { "name": "召唤怪物", "category": "特殊", "description": "从异界召唤生物协助战斗", "power": 72 },
+    { "name": "高等隐身", "category": "特殊", "description": "完全隐形且移动不会破除隐身效果", "power": 68 },
+    { "name": "时间停止", "category": "特殊", "description": "暂停时间流动，在此期间只有施法者可以行动", "power": 100 },
+    { "name": "律令死亡", "category": "特殊", "description": "用律令魔法直接切断目标的生命线", "power": 98 },
+    { "name": "龙息术", "category": "攻击", "description": "模拟龙族的吐息攻击，对锥形范围内造成大量伤害", "power": 92 },
+    { "name": "沉默术", "category": "防御", "description": "在目标区域创造沉默结界，阻止法术施放", "power": 55 },
+    { "name": "催眠术", "category": "辅助", "description": "使目标进入沉睡状态，无法行动", "power": 48 },
+    { "name": "恐惧术", "category": "特殊", "description": "唤起目标内心最深处的恐惧，使其逃跑", "power": 60 },
+    { "name": "巧手", "category": "辅助", "description": "灵巧的手指可以偷窃目标身上的物品", "power": 20 }
+  ],
+  "presetIntroductions": [
+    {
+      "title": "被诅咒之子",
+      "content": "自幼被神秘力量所困扰，体内流淌着不为人知的邪恶血脉。为了保护身边的人而踏上旅程，却在旅途中逐渐发现自己身世的惊人真相。巴尔之子的命运让他不得不面对众神的棋局与自己的宿命。",
+      "natureHint": "战士"
+    },
+    {
+      "title": "暗夜行者",
+      "content": "在深水城的阴暗小巷中长大的孤儿，靠偷窃和潜行技巧在黑暗中生存。他学会了一切自保的手段——开锁、解除陷阱、潜行刺杀。虽为盗贼，却怀着一颗侠义之心，只劫掠为富不仁者。",
+      "natureHint": "盗贼"
+    },
+    {
+      "title": "奥秘追寻者",
+      "content": "出身于知识之殿的学徒，因私自阅读禁术卷轴而被逐出师门。从此踏上追寻远古奥秘的旅途，渴望掌握那些被主流魔法界所禁忌的力量。他的法术威力惊人，但每一次施法都在消耗着什么。",
+      "natureHint": "法师"
+    },
+    {
+      "title": "神眷之女",
+      "content": "自幼便蒙受神恩，能够聆听到神明的低语。她在神殿中长大，以治愈和守护为己任。但战争的硝烟让她无法独善其身，她背起行囊走向战场，既是慈悲的医者，也是惩戒邪恶的利刃。",
+      "natureHint": "牧师"
+    },
+    {
+      "title": "荒野游侠",
+      "content": "被狼群养大的孩子，在费伦大陆的密林中学会了与自然共存。他追踪狩猎的技巧无人能及，与野兽为伴，以弓箭守护森林的边界。文明世界的复杂规则令他困惑，但野兽般的直觉让他总能化险为夷。",
+      "natureHint": "游侠"
+    },
+    {
+      "title": "陨落骑士",
+      "content": "曾是最荣耀的圣骑士团长，因拒绝执行屠城的命令而被教廷放逐。他脱下了刻有圣徽的铠甲，却从未放弃心中的正义。如今他以自由佣兵的身份行走天下，用手中的长剑维护自己认定的道义。",
+      "natureHint": "圣骑士"
+    },
+    {
+      "title": "林间低语者",
+      "content": "生长于费伦最古老的森林之中，自幼与草木鸟兽为伴。他遵循自然的法则，摒弃文明的繁文缛节。橡木是他的法杖，藤蔓是他的武器。他与森林的精灵做朋友，守护着那些尚未被文明侵蚀的净土。",
+      "natureHint": "德鲁伊"
+    },
+    {
+      "title": "流浪诗人",
+      "content": "游历过无数城邦的吟游诗人，酒馆中传唱的英雄故事让他心生向往。他手中的鲁特琴不仅是谋生的工具，更是隐藏的法器。他的歌声能振奋盟友也能迷惑敌人，他的故事里藏着真实的魔法力量。",
+      "natureHint": "吟游诗人"
+    },
+    {
+      "title": "苦行武者",
+      "content": "出身于异域的修道院，通过严苛的苦修锤炼出了钢铁般的意志和身体。他不需刀剑，双手就是他最致命的武器。他信奉力量源自内心，追求身心灵的完美统一。下山入世只因老师所言：真正的修行在红尘之中。",
+      "natureHint": "武僧"
+    },
+    {
+      "title": "龙脉后裔",
+      "content": "体内流淌着远古巨龙的血脉，这份力量在成年之际突然觉醒。她无法控制自己体内汹涌的魔法能量，时常在梦中释放出毁灭性的力量。她踏上旅途是为了寻找控制这份天赋的方法，或者——找到自己的血脉源头。",
+      "natureHint": "术士"
+    }
+  ],
+  "assets": {
+    "backgrounds": {
+      "bg-fighter": "backgrounds/fighter.svg",
+      "bg-mage": "backgrounds/mage.svg",
+      "bg-cleric": "backgrounds/cleric.svg",
+      "bg-thief": "backgrounds/thief.svg",
+      "bg-ranger": "backgrounds/ranger.svg",
+      "bg-paladin": "backgrounds/paladin.svg",
+      "bg-druid": "backgrounds/druid.svg",
+      "bg-bard": "backgrounds/bard.svg",
+      "bg-monk": "backgrounds/monk.svg",
+      "bg-sorcerer": "backgrounds/sorcerer.svg"
+    },
+    "icons": {
+      "class-fighter": "icons/fighter.svg",
+      "class-mage": "icons/mage.svg",
+      "class-cleric": "icons/cleric.svg",
+      "class-thief": "icons/thief.svg",
+      "class-ranger": "icons/ranger.svg",
+      "class-paladin": "icons/paladin.svg",
+      "class-druid": "icons/druid.svg",
+      "class-bard": "icons/bard.svg",
+      "class-monk": "icons/monk.svg",
+      "class-sorcerer": "icons/sorcerer.svg"
+    },
+    "frames": {
+      "default": "frames/default.svg",
+      "stone": "frames/stone.svg",
+      "ornate": "frames/ornate.svg"
+    },
+    "fonts": {}
+  },
+  "imageConfig": {
+    "imagePrompt": "Convert this character to a classic Dungeons & Dragons / Baldur's Gate RPG style. Detailed fantasy artwork with realistic textures, medieval aesthetic, stone and leather materials. Keep the character's original design, face, pose, costume, and key features completely unchanged — only change the rendering style. Character portrait suitable for an RPG character sheet card, with dark atmospheric background.",
+    "processing": {
+      "removeBackground": true,
+      "preferredRatio": "1:1"
+    }
+  },
+  "metadata": {
+    "createTime": "2026-07-18T00:00:00",
+    "updateTime": "2026-07-18T00:00:00",
+    "templateVersion": "1.0.0",
+    "minAppVersion": "0.1.0"
+  }
+}

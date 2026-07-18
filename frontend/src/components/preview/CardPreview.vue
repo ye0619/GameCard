@@ -10,10 +10,13 @@ import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import { useCardStore } from '@/stores/card'
 import { resolveTheme } from '@/utils/themeResolver'
 import EmptyState from '@/components/common/EmptyState.vue'
-import CardRenderer from '@/components/card/CardRenderer.vue'
+import TemplateRenderer from '@/renderer/TemplateRenderer.vue'
 
-const CARD_W = 1280
-const CARD_H = 720
+const CARD_W_DEFAULT = 1280
+const CARD_H_DEFAULT = 720
+
+const CARD_W = computed(() => store.selectedTemplate?.size?.width ?? CARD_W_DEFAULT)
+const CARD_H = computed(() => store.selectedTemplate?.size?.height ?? CARD_H_DEFAULT)
 
 const store = useCardStore()
 
@@ -89,8 +92,9 @@ function updateScale() {
   const pad = 48
   const availableW = area.clientWidth - pad
   const availableH = area.clientHeight - pad - 40
-  const s = Math.min(availableW / CARD_W, availableH / CARD_H)
-  scale.value = Math.min(s, 1)
+  // 计算缩放因子：让卡片尽可能利用预览空间，最大放大到 2× 以防过度模糊
+  const s = Math.min(availableW / CARD_W.value, availableH / CARD_H.value)
+  scale.value = Math.min(s, 2)
 }
 
 let resizeObserver: ResizeObserver | null = null
@@ -203,16 +207,6 @@ const imageShapeStyle = computed(() => {
 
   return s
 })
-
-/** Image transform (scale + position pan) from editor */
-const imageTransform = computed((): Record<string, string> => {
-  const cfg = store.imageConfig
-  if (!cfg.applied) return {}
-  if (cfg.scale === 1 && cfg.position.x === 0 && cfg.position.y === 0) return {}
-  return {
-    transform: `translate(${cfg.position.x}px, ${cfg.position.y}px) scale(${cfg.scale})`,
-  }
-})
 </script>
 
 <template>
@@ -264,14 +258,7 @@ const imageTransform = computed((): Record<string, string> => {
           }"
         >
           <div>
-            <CardRenderer
-              :template="store.selectedTemplate"
-              :card-data="store.cardData"
-              :theme="theme"
-              :image-url="image"
-              :image-style="imageShapeStyle"
-              :image-transform="imageTransform"
-            />
+            <TemplateRenderer />
           </div>
         </div>
       </div>

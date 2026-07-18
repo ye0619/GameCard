@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none">
+  <!-- Oak leaf/tree -->
+  <path d="M24 44 L24 24" stroke="#8B4513" stroke-width="2.5"/>
+  <!-- Tree canopy -->
+  <path d="M24 24 Q12 8 24 4 Q36 8 24 24Z" fill="#8B4513" stroke="#5C2E00" stroke-width="1.5"/>
+  <!-- Leaf veins -->
+  <path d="M24 22 Q18 14 16 12" fill="none" stroke="#A0522D" stroke-width="0.8" stroke-opacity="0.6"/>
+  <path d="M24 22 Q30 14 32 12" fill="none" stroke="#A0522D" stroke-width="0.8" stroke-opacity="0.6"/>
+  <path d="M24 18 Q20 12 20 8" fill="none" stroke="#A0522D" stroke-width="0.8" stroke-opacity="0.6"/>
+  <path d="M24 18 Q28 12 28 8" fill="none" stroke="#A0522D" stroke-width="0.8" stroke-opacity="0.6"/>
+  <!-- Roots -->
+  <path d="M20 44 Q18 46 16 44" fill="none" stroke="#8B4513" stroke-width="1.5" stroke-opacity="0.5"/>
+  <path d="M28 44 Q30 46 32 44" fill="none" stroke="#8B4513" stroke-width="1.5" stroke-opacity="0.5"/>
+  <!-- Small leaf -->
+  <path d="M34 16 Q38 12 36 10 Q32 12 34 16Z" fill="#A0522D" fill-opacity="0.3"/>
+  <path d="M14 16 Q10 12 12 10 Q16 12 14 16Z" fill="#A0522D" fill-opacity="0.3"/>
+</svg>

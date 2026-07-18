@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 900">
+  <defs>
+    <radialGradient id="glow" cx="50%" cy="40%" r="65%">
+      <stop offset="0%" stop-color="#228B22" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#1B5E20" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1A2A18"/>
+      <stop offset="50%" stop-color="#121E10"/>
+      <stop offset="100%" stop-color="#0A1408"/>
+    </linearGradient>
+    <linearGradient id="stone" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2A3A28" stop-opacity="0.2"/>
+      <stop offset="50%" stop-color="#1A2A18" stop-opacity="0.1"/>
+      <stop offset="100%" stop-color="#0A1A08" stop-opacity="0.2"/>
+    </linearGradient>
+  </defs>
+  <rect width="600" height="900" fill="url(#bg)"/>
+  <rect width="600" height="900" fill="url(#stone)"/>
+  <circle cx="300" cy="350" r="300" fill="url(#glow)"/>
+  <!-- Forest canopy border -->
+  <path d="M0,0 Q150,60 300,0 Q450,60 600,0 L600,80 Q450,140 300,80 Q150,140 0,80Z" fill="#228B22" fill-opacity="0.08"/>
+  <path d="M0,820 Q150,760 300,820 Q450,760 600,820 L600,900 L0,900Z" fill="#228B22" fill-opacity="0.06"/>
+  <!-- Arrow/leaf patterns -->
+  <path d="M200,200 Q250,250 200,300" fill="none" stroke="#228B22" stroke-width="2" stroke-opacity="0.1"/>
+  <path d="M400,200 Q350,250 400,300" fill="none" stroke="#228B22" stroke-width="2" stroke-opacity="0.1"/>
+  <path d="M300,150 L300,250" stroke="#228B22" stroke-width="2" stroke-opacity="0.08"/>
+  <!-- Vine-like curves -->
+  <path d="M100,500 Q200,600 150,700" fill="none" stroke="#228B22" stroke-width="1.5" stroke-opacity="0.08"/>
+  <path d="M500,550 Q400,650 450,750" fill="none" stroke="#228B22" stroke-width="1.5" stroke-opacity="0.08"/>
+  <!-- Stone texture -->
+  <circle cx="80" cy="160" r="3" fill="#2A3A28" fill-opacity="0.2"/>
+  <circle cx="520" cy="220" r="4" fill="#2A3A28" fill-opacity="0.15"/>
+  <circle cx="470" cy="760" r="3" fill="#2A3A28" fill-opacity="0.2"/>
+  <circle cx="130" cy="700" r="4" fill="#2A3A28" fill-opacity="0.12"/>
+  <circle cx="350" cy="350" r="2" fill="#228B22" fill-opacity="0.08"/>
+  <circle cx="180" cy="520" r="3" fill="#228B22" fill-opacity="0.06"/>
+</svg>

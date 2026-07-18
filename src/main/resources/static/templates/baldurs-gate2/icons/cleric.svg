@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none">
+  <!-- Holy symbol - sun/cross -->
+  <circle cx="24" cy="24" r="16" fill="none" stroke="#DAA520" stroke-width="2.5"/>
+  <!-- Cross -->
+  <line x1="24" y1="10" x2="24" y2="38" stroke="#DAA520" stroke-width="2.5"/>
+  <line x1="10" y1="24" x2="38" y2="24" stroke="#DAA520" stroke-width="2.5"/>
+  <!-- Inner radiance -->
+  <circle cx="24" cy="24" r="6" fill="#EEC900" fill-opacity="0.3" stroke="#B8860B" stroke-width="1"/>
+  <!-- Rays -->
+  <line x1="24" y1="4" x2="24" y2="8" stroke="#EEC900" stroke-width="1" stroke-opacity="0.6"/>
+  <line x1="24" y1="40" x2="24" y2="44" stroke="#EEC900" stroke-width="1" stroke-opacity="0.6"/>
+  <line x1="4" y1="24" x2="8" y2="24" stroke="#EEC900" stroke-width="1" stroke-opacity="0.6"/>
+  <line x1="40" y1="24" x2="44" y2="24" stroke="#EEC900" stroke-width="1" stroke-opacity="0.6"/>
+</svg>

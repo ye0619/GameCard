@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 900">
+  <defs>
+    <radialGradient id="glow" cx="50%" cy="40%" r="65%">
+      <stop offset="0%" stop-color="#B22222" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#8B0000" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2A1F1A"/>
+      <stop offset="50%" stop-color="#1E1510"/>
+      <stop offset="100%" stop-color="#140F0A"/>
+    </linearGradient>
+    <linearGradient id="stone" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3A2A1B" stop-opacity="0.3"/>
+      <stop offset="50%" stop-color="#2A1F1A" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="#1A1008" stop-opacity="0.3"/>
+    </linearGradient>
+  </defs>
+  <rect width="600" height="900" fill="url(#bg)"/>
+  <rect width="600" height="900" fill="url(#stone)"/>
+  <circle cx="300" cy="350" r="300" fill="url(#glow)"/>
+  <!-- Stone arch decoration -->
+  <path d="M0,0 Q300,80 600,0 L600,100 Q300,180 0,100Z" fill="#B22222" fill-opacity="0.08"/>
+  <path d="M0,800 Q300,720 600,800 L600,900 L0,900Z" fill="#B22222" fill-opacity="0.06"/>
+  <!-- Crossed swords motif -->
+  <line x1="180" y1="200" x2="420" y2="700" stroke="#B22222" stroke-width="3" stroke-opacity="0.15"/>
+  <line x1="420" y1="200" x2="180" y2="700" stroke="#B22222" stroke-width="3" stroke-opacity="0.15"/>
+  <!-- Stone texture dots -->
+  <circle cx="80" cy="120" r="3" fill="#3A2A1B" fill-opacity="0.2"/>
+  <circle cx="520" cy="150" r="4" fill="#3A2A1B" fill-opacity="0.15"/>
+  <circle cx="450" cy="750" r="3" fill="#3A2A1B" fill-opacity="0.2"/>
+  <circle cx="100" cy="650" r="5" fill="#3A2A1B" fill-opacity="0.12"/>
+  <circle cx="300" cy="500" r="2" fill="#3A2A1B" fill-opacity="0.15"/>
+  <circle cx="150" cy="400" r="3" fill="#B22222" fill-opacity="0.08"/>
+  <circle cx="480" cy="450" r="4" fill="#B22222" fill-opacity="0.06"/>
+</svg>

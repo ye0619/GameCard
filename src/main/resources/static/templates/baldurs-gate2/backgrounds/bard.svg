@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 900">
+  <defs>
+    <radialGradient id="glow" cx="50%" cy="40%" r="65%">
+      <stop offset="0%" stop-color="#8B008B" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#5B005B" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2A1828"/>
+      <stop offset="50%" stop-color="#1E101C"/>
+      <stop offset="100%" stop-color="#140A12"/>
+    </linearGradient>
+    <linearGradient id="stone" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3A2038" stop-opacity="0.2"/>
+      <stop offset="50%" stop-color="#2A1828" stop-opacity="0.1"/>
+      <stop offset="100%" stop-color="#1A0A18" stop-opacity="0.2"/>
+    </linearGradient>
+  </defs>
+  <rect width="600" height="900" fill="url(#bg)"/>
+  <rect width="600" height="900" fill="url(#stone)"/>
+  <circle cx="300" cy="350" r="300" fill="url(#glow)"/>
+  <!-- Music wave border -->
+  <path d="M0,0 Q150,70 300,20 Q450,70 600,0 L600,90 Q450,140 300,90 Q150,140 0,90Z" fill="#8B008B" fill-opacity="0.08"/>
+  <path d="M0,810 Q150,760 300,810 Q450,760 600,810 L600,900 L0,900Z" fill="#8B008B" fill-opacity="0.06"/>
+  <!-- Music note patterns -->
+  <circle cx="220" cy="250" r="8" fill="none" stroke="#8B008B" stroke-width="2" stroke-opacity="0.1"/>
+  <line x1="228" y1="250" x2="228" y2="190" stroke="#8B008B" stroke-width="2" stroke-opacity="0.1"/>
+  <path d="M228,190 Q245,195 240,210" fill="none" stroke="#8B008B" stroke-width="2" stroke-opacity="0.1"/>
+  <circle cx="370" cy="300" r="8" fill="none" stroke="#8B008B" stroke-width="2" stroke-opacity="0.08"/>
+  <line x1="378" y1="300" x2="378" y2="240" stroke="#8B008B" stroke-width="2" stroke-opacity="0.08"/>
+  <!-- Sound wave curves -->
+  <path d="M130,500 Q300,400 470,500" fill="none" stroke="#8B008B" stroke-width="1.5" stroke-opacity="0.1"/>
+  <path d="M150,530 Q300,440 450,530" fill="none" stroke="#8B008B" stroke-width="1" stroke-opacity="0.07"/>
+  <!-- Stone texture -->
+  <circle cx="80" cy="150" r="3" fill="#3A2038" fill-opacity="0.2"/>
+  <circle cx="520" cy="180" r="4" fill="#3A2038" fill-opacity="0.15"/>
+  <circle cx="450" cy="760" r="3" fill="#3A2038" fill-opacity="0.2"/>
+  <circle cx="150" cy="720" r="4" fill="#3A2038" fill-opacity="0.12"/>
+  <circle cx="300" cy="420" r="2" fill="#8B008B" fill-opacity="0.08"/>
+</svg>

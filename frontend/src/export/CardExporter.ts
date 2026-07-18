@@ -13,9 +13,9 @@ import html2canvas from 'html2canvas'
 import { toCanvas as htmlToImageToCanvas, toSvg } from 'html-to-image'
 import type { ExportOptions, ExportFormat } from './types'
 
-/** 卡片原生尺寸（1280×720 横版 HUD 布局） */
-const CARD_WIDTH = 1280
-const CARD_HEIGHT = 720
+/** 默认卡片尺寸（当无法从元素自动检测时使用） */
+const CARD_WIDTH_DEFAULT = 1280
+const CARD_HEIGHT_DEFAULT = 720
 
 /**
  * html-to-image 的 MIME 类型映射
@@ -61,7 +61,10 @@ export async function exportToBlob(
   // 策略 3：toSvg + 手动渲染
   try {
     const svgDataUrl = await toSvg(node, buildHtmlToImageConfig(opts))
-    const blob = await svgToBlob(svgDataUrl, CARD_WIDTH * scale, CARD_HEIGHT * scale, mimeType, opts)
+    const rect = node.getBoundingClientRect()
+    const w = rect.width || CARD_WIDTH_DEFAULT
+    const h = rect.height || CARD_HEIGHT_DEFAULT
+    const blob = await svgToBlob(svgDataUrl, w * scale, h * scale, mimeType, opts)
     if (blob) return blob
   } catch (err) {
     console.warn('Export strategy 3 (toSvg) failed:', err)
@@ -115,8 +118,6 @@ export async function exportToDataUrl(
 
 function buildHtml2CanvasConfig(opts: ExportOptions) {
   return {
-    width: CARD_WIDTH,
-    height: CARD_HEIGHT,
     scale: opts.scale,
     /** 使用 CORS 加载跨域图片 */
     useCORS: true,
@@ -127,8 +128,8 @@ function buildHtml2CanvasConfig(opts: ExportOptions) {
     /** 日志关闭 */
     logging: false,
     /** 窗口宽高（避免滚动条干扰） */
-    windowWidth: CARD_WIDTH,
-    windowHeight: CARD_HEIGHT,
+    windowWidth: CARD_WIDTH_DEFAULT,
+    windowHeight: CARD_HEIGHT_DEFAULT,
     /** 图片跨域处理 */
     imageTimeout: 15000,
     /** 移除 canvas 污染保护（我们使用同源资源） */
@@ -143,8 +144,6 @@ function buildHtml2CanvasConfig(opts: ExportOptions) {
 function buildHtmlToImageConfig(opts: ExportOptions) {
   return {
     pixelRatio: opts.scale,
-    width: CARD_WIDTH,
-    height: CARD_HEIGHT,
     quality: opts.format === 'png' ? undefined : opts.quality,
     cacheBust: true,
     fetchRequestInit: {
